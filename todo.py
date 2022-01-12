@@ -1,47 +1,28 @@
 import pendulum
-class Topic:
+
+class TodoList:
     def __init__(self):
-        self.topic = ""
-        self.description = ""
-
-    def getTopic(self):
-        return self.topic
-
-    def setTopic(self, text):
-        if(not isinstance(text, str)):     # if other than string raise TypeError
-            raise TypeError
-        self.topic = text
-
-    def getDescription(self):
-        return self.description
-
-    def setDescription(self, text):
-        if(not isinstance(text, str)):     # if other than string raise TypeError
-            raise TypeError
-        self.description = text
-
-class Todo(Topic):
-    def __init__(self):
-        self.topic = Topic()
-        self.orderList = 0
-        self.importance = 0
-        self.endDate = 0
-        self.checkDone = False
+        self.title = ""
+        self.pinned = False
+        self.deleted = False
+        self.completed = False
+        self.dueDate = 0
 
     def to_dict(self):      # change attribute to dict
-        return {'topic': self.topic,
+        return {'topic': self.title,
                 'endDate': self.getDateString(),
                 'checkDone': self.checkDone,
                 'desc': self.description,
                 'orderList': self.orderList}
 
+
     def getDate(self):
-        return self.endDate     # return pendulum date
+        return self.dueDate     # return pendulum date
 
     def getDateString(self):
-        return self.endDate.to_date_string()    # return a string date
+        return self.dueDate.to_date_string()    # return a string date
 
-    def getOrderList(self):
+    def getComplete(self):
         return self.orderList
 
     def getDone(self):
@@ -49,21 +30,26 @@ class Todo(Topic):
 
     def setDate(self, dt):
         date = pendulum.from_format(dt, 'YYYY/MM/DD')   # specify date formate
-        self.endDate = date
+        self.dueDate = date
 
-    def setOrderList(self, order):
+    def setComplete(self, order):
         if(not isinstance(order, int)):     # if other than integer raise TypeError
             raise TypeError
         self.orderList = order
 
-    def setDone(self, done):
+    def setDeleted(self, done):
         if(not isinstance(done, bool)):     # if other than boolean raise TypeError
             raise TypeError
         self.checkDone = done
+            
+    def setPinned(self, pin):
+        if(not isinstance(pin, bool)):     # if other than boolean raise TypeError
+            raise TypeError
+        self.pinned = pin
 
 
 if __name__ == "__main__":
-    t = Todo()
-    t.setDate('2021/21-10')
+    t = TodoList()
+    t.setDate('2021/21/10')
     print(type(t.getDate()))
     print(t.getDateString())

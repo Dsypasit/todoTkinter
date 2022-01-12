@@ -1,4 +1,4 @@
-from todo import Todo
+from todo import TodoList
 from user import User
 import json
 class Note:
@@ -7,9 +7,9 @@ class Note:
         self.user = User()
         self.userTodo = {}
 
-    def createTodo(self, topic, desc, date):
-        todo = Todo()
-        todo.setTopic(topic)
+    def createTodo(self, title, desc, date):
+        todo = TodoList()
+        todo.setTitle(title)
         todo.setDescription(desc)
         todo.setDate(date)
         self.todoAll.append(todo.to_dict())
@@ -43,6 +43,8 @@ class Note:
             self.todoAll = self.userTodo[user]
         else:
             self.todoAll = []
+        return self.todoAll
+
             
 if __name__ == "__main__":
     no = Note()
