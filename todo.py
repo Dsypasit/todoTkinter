@@ -28,7 +28,7 @@ class Todo(Topic):
         self.endDate = 0
         self.checkDone = False
 
-    def to_dict(self):
+    def to_dict(self):      # change attribute to dict
         return {'topic': self.topic,
                 'endDate': self.getDateString(),
                 'checkDone': self.checkDone,
