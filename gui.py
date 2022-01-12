@@ -235,30 +235,39 @@ class editWindow(Toplevel):
                 entry.delete(0,"end")
                 entry.insert(0, text)
 
+        def update_listbox(index, updated_item):
+                listbox.delete(listbox.index(index))
+                listbox.insert(index, updated_item)
+
         def edit_list():
-                index = int(listbox.curselection()[0])
-                print(index)
+                try :
+                        index = int(listbox.curselection()[0])
+                        print(index)
 
-                # string to entry
-                value = listbox.get(index)      # text selection form listbox
-                setTextInput(value, title_entry)
-                # date
-                cal = DateEntry(self, selectmode = 'day',
-                                year = 2020, month = 5,
-                                day = 22)
-                cal.grid(row=0, column=3, padx=10, sticky='w')
-                # detail
-                setTextInput(value, detail_entry)
+                        # string to entry
+                        value = listbox.get(index)      # text selection form listbox
+                        #setTextInput(value, title_entry)
+                        # date
+                        cal = DateEntry(self, selectmode = 'day',
+                                        year = 2020, month = 5,
+                                        day = 22)
+                        cal.grid(row=0, column=3, padx=10, sticky='w')
+                        # detail
+                        #setTextInput(value, detail_entry)
 
-                # string form entry
-                str_title = title_text.get()
-                print(str_title)
-                str_detail = detail_text.get()
-                print(str_detail)
-                str_date = date_text
-                print(str_date)
+                        # string form entry
+                        str_title = title_text.get()
+                        print(str_title)
+                        str_detail = detail_text.get()
+                        print(str_detail)
+                        str_date = date_text
+                        print(str_date)
 
-                #self.destroy()
+                        # update_listbox
+                        update_listbox(index, str_title)
+
+                        #self.destroy()
+                except: pass
 
 
         # title
