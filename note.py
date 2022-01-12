@@ -12,8 +12,10 @@ class Note:
         todo.setTitle(title)
         todo.setDate(date)
         self.todoAll.append(todo.to_dict())
+        self.updateCurrentUser()
 
     def getTodos(self):
+        self.changeUser(self.user.getName())
         return self.todoAll
 
     def alarmTodo(self):
@@ -36,7 +38,6 @@ class Note:
         return self.userTodo
         
     def changeUser(self, user):
-        self.updateCurrentUser()
         self.user.changeName(user)
         if user in self.userTodo:
             self.todoAll = self.userTodo[user]
@@ -49,9 +50,9 @@ if __name__ == "__main__":
     no = Note()
     no.createTodo("hi", "2011/1/2")
     no.createTodo("hi2", "2011/1/3")
-    # no.changeUser("ong")
-    # no.createTodo("hi2", "hello2", "2011/1/3")
-    # no.createTodo("hi2", "hello2", "2011/1/3")
+    no.changeUser("ong")
+    no.createTodo("hi2", "2011/1/3")
+    no.createTodo("hi2", "2011/1/3")
     no.toJson()
     print(no.userTodo)
     a = no.loadJson()

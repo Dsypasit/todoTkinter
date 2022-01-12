@@ -3,14 +3,25 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from tkinter.font import Font
+from note import Note
 
 # Creating App class which will contain
 class App:
     def __init__(self, master) -> None:
         # Instantiating master i.e toplevel Widget
         self.master = master
+        self.note = Note()
+        self.list = []
+        self.todo = []
         # Setting the title of the window
         self.master.title('TODODO')
+
+        def fetch_data():
+                self.note.loadJson()
+                self.todo = self.note.getTodos()
+                for n in self.todo:
+                        self.list.append(n['title'])
+                print(self.list)
 
         # FUNCTIONS
         def delete_item():
@@ -92,7 +103,7 @@ class App:
         mframe1.rowconfigure(0,weight=1) 
 
         # label
-        acc = Label(mframe1, text ="Guest", font=('Helvetica 11 bold'))
+        acc = Label(mframe1, text =self.note.user.getName(), font=('Helvetica 11 bold'))
         acc.grid(row=0, column=0, padx=10, pady=10, sticky='w')
 
         # button check
@@ -143,7 +154,8 @@ class App:
         btn_add.grid(row=0, column=1)
 
 
-        self.list = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Australia", "Brazil", "Canada", "China", "Iceland", "Israel", "United States", "Zimbabwe"]
+        # self.list = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Australia", "Brazil", "Canada", "China", "Iceland", "Israel", "United States", "Zimbabwe"]
+        fetch_data()
         for item in range(len(self.list)): 
 	        listbox.insert(END, self.list[item]) 
 

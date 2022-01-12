@@ -8,7 +8,7 @@ class TodoList:
         self.dueDate = 0
 
     def to_dict(self):      # change attribute to dict
-        return {'topic': self.title,
+        return {'title': self.title,
                 'endDate': self.getDateString(),
                 'completed': self.completed,
                 'pinned': self.pinned}
@@ -30,12 +30,12 @@ class TodoList:
     def setTitle(self, title):
         if(not isinstance(title, str)):     # if other than integer raise TypeError
             raise TypeError
-        self.orderList = title
+        self.title = title
 
     def setComplete(self, order):
         if(not isinstance(order, int)):     # if other than integer raise TypeError
             raise TypeError
-        self.orderList = order
+        self.completed = order
             
     def setPinned(self, pin):
         if(not isinstance(pin, bool)):     # if other than boolean raise TypeError
