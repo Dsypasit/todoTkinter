@@ -3,6 +3,7 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from tkinter.font import Font
+from tkcalendar import DateEntry # pip install tkcalendar
 
 # Creating App class which will contain
 class App:
@@ -16,7 +17,7 @@ class App:
         def delete_item():
                 listbox.delete(ANCHOR)
                 # label status len(list)
-                text_status = Label(frame3, text ="have "+ str(listbox.size()) + " list ")
+                text_status = Label(mframe3, text ="have "+ str(listbox.size()) + " list ")
                 text_status.grid(row=0, column=0, sticky='w')
 
         def check_item():
@@ -45,7 +46,7 @@ class App:
                         if listbox.itemcget(count, "fg") == '#ffa364':
                                 listbox.delete(listbox.index(count))
                         count +=1
-                text_status = Label(frame3, text ="have "+ str(listbox.size()) + " list ")
+                text_status = Label(mframe3, text ="have "+ str(listbox.size()) + " list ")
                 text_status.grid(row=0, column=0, sticky='w')
 
 
@@ -79,7 +80,7 @@ class App:
         menubar.add_cascade(label="Account", menu=account_menu)
         # create edit menu
         edit_menu = Menu(menubar, tearoff=0)
-        edit_menu.add_command(label="Update",  command=donothing)
+        edit_menu.add_command(label="Update",  command= lambda: editWindow(self.master))
         edit_menu.add_separator()
         edit_menu.add_command(label="Delete All Done",  command=del_alldone)
 
@@ -142,7 +143,7 @@ class App:
                 lambda e: addWindow(self.master))
         btn_add.grid(row=0, column=1)
 
-
+        # list in listbox
         self.list = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Australia", "Brazil", "Canada", "China", "Iceland", "Israel", "United States", "Zimbabwe"]
         for item in range(len(self.list)): 
 	        listbox.insert(END, self.list[item]) 
@@ -166,11 +167,20 @@ class addWindow(Toplevel):
         self.title("Add List")
 
         def add_list():
+                # string form entry
                 str_title = title_text.get()
-                listbox.insert(END, str_title)
-                self.destroy()
+                print(str_title)
+                str_detail = detail_text.get()
+                print(str_detail)
+                str_date = date_text
+                print(str_date)
+
+                # update count list
                 text_status = Label(mframe3, text ="have "+ str(listbox.size()) + " list ")
                 text_status.grid(row=0, column=0, sticky='w')
+
+                self.destroy()
+                
 
         # title
         title_text = StringVar()
@@ -179,26 +189,25 @@ class addWindow(Toplevel):
         title_entry = Entry(self, textvariable=title_text)
         title_entry.grid(row=0, column=1, padx=10, pady=10)
 
-        # user
-        user_text = StringVar()
-        user_label = Label(self, text ="User")
-        user_label.grid(row=0, column=2,sticky='w')
-        user_entry = Entry(self, textvariable=user_text)
-        user_entry.grid(row=0, column=3, padx=10, pady=10)
+        # date
+        date_label = Label(self, text ="Date")
+        date_label.grid(row=0, column=2,sticky='w')
+        cal = DateEntry(self, locale='en_US') 
+        cal.grid(row=0, column=3, padx=10, sticky='w')
+        date_text = cal.get_date()
 
         # container: addWindow(frame2)
         frame2 = Frame(self)  
         frame2.grid(row=1, column=0, columnspan=4, padx=10, pady=10, sticky='nsew')      
-        frame2.columnconfigure(0,weight=0)
-        frame2.rowconfigure(1,weight=0) 
+        frame2.columnconfigure(0,weight=2)
+        frame2.rowconfigure(0,weight=0) 
 
         # detail
         detail_text = StringVar()
         detail_label = Label(frame2, text='Detail')
         detail_label.grid(row=0, column=0, sticky='w')
         detail_entry = Entry(frame2, textvariable=detail_text)
-        detail_entry.grid(row=1, column=0, columnspan=2, pady=10,
-                          ipadx=60, ipady=20,sticky='nsew')
+        detail_entry.grid(row=1, sticky='nswe')
 
         # container: addWindow(frame3)
         frame3 = Frame(self)  
@@ -222,9 +231,35 @@ class editWindow(Toplevel):
         super().__init__(master = master)
         self.title("Update List")
 
+        def setTextInput(text, entry):
+                entry.delete(0,"end")
+                entry.insert(0, text)
+
         def edit_list():
+                index = int(listbox.curselection()[0])
+                print(index)
+
+                # string to entry
+                value = listbox.get(index)      # text selection form listbox
+                setTextInput(value, title_entry)
+                # date
+                cal = DateEntry(self, selectmode = 'day',
+                                year = 2020, month = 5,
+                                day = 22)
+                cal.grid(row=0, column=3, padx=10, sticky='w')
+                # detail
+                setTextInput(value, detail_entry)
+
+                # string form entry
                 str_title = title_text.get()
                 print(str_title)
+                str_detail = detail_text.get()
+                print(str_detail)
+                str_date = date_text
+                print(str_date)
+
+                #self.destroy()
+
 
         # title
         title_text = StringVar()
@@ -233,26 +268,25 @@ class editWindow(Toplevel):
         title_entry = Entry(self, textvariable=title_text)
         title_entry.grid(row=0, column=1, padx=10, pady=10)
 
-        # user
-        user_text = StringVar()
-        user_label = Label(self, text ="User")
-        user_label.grid(row=0, column=2,sticky='w')
-        user_entry = Entry(self, textvariable=user_text)
-        user_entry.grid(row=0, column=3, padx=10, pady=10)
+        # date
+        date_label = Label(self, text ="Date")
+        date_label.grid(row=0, column=2,sticky='w')
+        cal = DateEntry(self, locale='en_US') 
+        cal.grid(row=0, column=3, padx=10, sticky='w')
+        date_text = cal.get_date()
 
         # container: addWindow(frame2)
         frame2 = Frame(self)  
         frame2.grid(row=1, column=0, columnspan=4, padx=10, pady=10, sticky='nsew')      
-        frame2.columnconfigure(0,weight=0)
-        frame2.rowconfigure(1,weight=0) 
+        frame2.columnconfigure(0,weight=2)
+        frame2.rowconfigure(0,weight=0) 
 
         # detail
         detail_text = StringVar()
         detail_label = Label(frame2, text='Detail')
         detail_label.grid(row=0, column=0, sticky='w')
         detail_entry = Entry(frame2, textvariable=detail_text)
-        detail_entry.grid(row=1, column=0, columnspan=2, pady=10,
-                          ipadx=60, ipady=20,sticky='nsew')
+        detail_entry.grid(row=1, sticky='nswe')
 
         # container: addWindow(frame3)
         frame3 = Frame(self)  
