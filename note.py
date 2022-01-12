@@ -7,10 +7,9 @@ class Note:
         self.user = User()
         self.userTodo = {}
 
-    def createTodo(self, title, desc, date):
+    def createTodo(self, title, date):
         todo = TodoList()
         todo.setTitle(title)
-        todo.setDescription(desc)
         todo.setDate(date)
         self.todoAll.append(todo.to_dict())
 
@@ -48,8 +47,8 @@ class Note:
             
 if __name__ == "__main__":
     no = Note()
-    no.createTodo("hi", "hello", "2011/1/2")
-    no.createTodo("hi2", "hello2", "2011/1/3")
+    no.createTodo("hi", "2011/1/2")
+    no.createTodo("hi2", "2011/1/3")
     # no.changeUser("ong")
     # no.createTodo("hi2", "hello2", "2011/1/3")
     # no.createTodo("hi2", "hello2", "2011/1/3")
