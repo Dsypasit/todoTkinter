@@ -1,11 +1,9 @@
 # importing tkinter module and Widgets
-from asyncio import events
-from cProfile import label
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from tkinter.font import Font
-from turtle import width
+from turtle import st
 from tkcalendar import DateEntry # pip install tkcalendar
 from time import strftime
 
@@ -18,36 +16,67 @@ class App:
         self.master.title('TODODO')
 
         self.account = ["Guest", "user1", "user2"]
-        self.listbox = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Australia", "Brazil", "Canada", "China", "Iceland", "Israel", "United States", "Zimbabwe"]
+        self.mlist = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Australia", "Brazil", "Canada", "China", "Iceland", "Israel", "United States", "Zimbabwe"]
+        self.clist = []
+        self.tasklist =[]
 
         # FUNCTIONS
         def delete_item():
                 main_listbox.delete(ANCHOR)
-                # label status len(list)
+                # update status 
                 text_status = Label(mframe3, text ="have "+ str(main_listbox.size()) + " list ")
                 text_status.grid(row=0, column=0, sticky='w')
+
+        def changePage():
+                index=notebook.index(notebook.select())
+                if index == 0:
+                        # button check
+                        btn_add = Button(mframe1,text ="check", command=check_item)
+                        btn_add.grid(row=0, padx=10, pady=10, column=1, sticky='ew')
+                elif index == 1:
+                        # button check
+                        btn_add = Button(mframe1,text ="uncheck", command=check_item)
+                        btn_add.grid(row=0, padx=10, pady=10, column=1, sticky='ew')
+                
+
+        def click_check():
+                try :
+                        index = int(task_listbox.curselection()[0])
+                        # not done
+                        if task_listbox.itemcget(index, "fg") == "#ffa364":
+                                task_listbox.itemconfig(
+                                        task_listbox.curselection(),
+                                        fg='#21130d')
+                                # get rid of selection bar
+                                task_listbox.select_clear(0, END)
+                        
+                        # done
+                        task_listbox.itemconfig(
+                                task_listbox.curselection(),
+                                fg='#ffa364')
+                        # get rid of selection bar
+                        task_listbox.select_clear(0, END)
+                except: pass
 
         def check_item():
                 try :
                         index = int(main_listbox.curselection()[0])
-                        # not done
-                        if main_listbox.itemcget(index, "fg") == "#ffa364":
-                                main_listbox.itemconfig(
-                                        main_listbox.curselection(),
-                                        fg='#21130d')
-                                # get rid of selection bar
-                                main_listbox.select_clear(0, END)
-                        
-                        # done
-                        main_listbox.itemconfig(
-                                main_listbox.curselection(),
-                                fg='#ffa364')
-                        # get rid of selection bar
-                        main_listbox.select_clear(0, END)
+                        value_title = main_listbox.get(index)      # text selection form listbox
+
+                        clistbox.insert(END, value_title) 
+
+                        main_listbox.delete(ANCHOR)
+                        # update status 
+                        text_status = Label(mframe3, text ="have "+ str(main_listbox.size()) + " list ")
+                        text_status.grid(row=0, column=0, sticky='w')
+
                 except: pass
 
-        def click_item(listbox):
+        def click_item_show(listbox):
                 try :
+                        btn_del = Button(detail_frame1,text ="Delete", state= NORMAL, command=delete_item)
+                        btn_del.grid(row=2,column=3,pady=10, sticky='ew')
+
                         index = int(listbox.curselection()[0])
                         value_title = listbox.get(index)      # text selection form listbox
 
@@ -55,7 +84,7 @@ class App:
                         main_title_text.set(value_title)
                        
                         # show date
-                        main_cal = DateEntry(detail_frame, selectmode = 'day',
+                        main_cal = DateEntry(detail_frame1, selectmode = 'day',
                         year = 2020, month = 5,
                         day = 22)
                         main_cal.grid(row=0, column=3, padx=10, sticky='w') 
@@ -65,7 +94,7 @@ class App:
                         main_detail_text.set(value_detail)
 
                         # set time
-                        value_time = strftime('%H:%M:%S %p')
+                        value_time = strftime('%H:%M:%S')
                         main_time_text.set(value_time)  # adding time to Entry
                         
                 except: pass
@@ -80,7 +109,6 @@ class App:
                 text_status = Label(mframe3, text ="have "+ str(main_listbox.size()) + " list ")
                 text_status.grid(row=0, column=0, sticky='w')
 
-
         def donothing():
                 filewin = Toplevel(root)
                 button = Button(filewin, text="Do nothing button")
@@ -89,7 +117,6 @@ class App:
         # combo box
         def changeAccount(event):
                 pass
-
 
         #///////////////////////////
 
@@ -128,54 +155,75 @@ class App:
         detail_frame = ttk.Frame(self.master, width=250)
         detail_frame.grid(row=0,column=2,rowspan=3, padx=10, sticky='nswe')
 
-        main_title_label = Label(detail_frame,text="Title :",font=('Helvetica 11 bold'))
-        main_title_label.grid(row=0, column=0,sticky='w', padx=10, pady=10)
-        main_title_text= StringVar()
-        title_show  = Label(detail_frame,textvariable=main_title_text,font=('Helvetica 11'))
-        title_show.grid(row=0,column=1,padx=10)
-
-        # date
-        main_date_label = Label(detail_frame, text ="Date")
-        main_date_label.grid(row=0, column=2,sticky='w')
-        main_cal = DateEntry(detail_frame, selectmode = 'day',
-                        year = 2020, month = 5,
-                        day = 22)
-        main_cal.grid(row=0, column=3, padx=10, sticky='w') 
-        date_text = main_cal.get_date()
-        print(date_text)
-
-        # container: detail_frame(frame2)
+        # container: detail_frame(frame1)
         detail_frame1 = Frame(detail_frame)  
         detail_frame1.grid(row=1, column=0, columnspan=4, padx=10, pady=10, sticky='nsew')      
         detail_frame1.columnconfigure(0,weight=2)
         detail_frame1.rowconfigure(0,weight=0) 
 
+        #title
+        main_title_label = Label(detail_frame1,text="Title :",font=('Helvetica 11 bold'))
+        main_title_label.grid(row=0, column=0,sticky='w', pady=10)
+        main_title_text= StringVar()
+        title_show  = Entry(detail_frame1,textvariable=main_title_text,font=('Helvetica 11'))
+        title_show.grid(row=0,column=1,padx=10, sticky='w')
+
+        # date
+        main_date_label = Label(detail_frame1, text ="Date :")
+        main_date_label.grid(row=0, column=2,sticky='w')
+        main_cal = DateEntry(detail_frame1, selectmode = 'day',
+                        year = 2020, month = 5,
+                        day = 22)
+        main_cal.grid(row=0, column=3, padx=10, sticky='w') 
+        date_text = main_cal.get_date()
+
         # detail
         main_detail_text= StringVar()
         main_detail_label = Label(detail_frame1, text='Detail')
-        main_detail_label.grid(row=0, column=0, sticky='w')
+        main_detail_label.grid(row=1, column=0, sticky='w')
         main_detail_show = Label(detail_frame1,textvariable=main_detail_text)
-        main_detail_show.grid(row=1, columnspan=4, pady=10, sticky='nswe')
+        main_detail_show.grid(row=2,column=0, columnspan=3, pady=10, sticky='nswe')
+
+        # button delete
+        btn_del = Button(detail_frame1,text ="Delete", state= DISABLED)
+        btn_del.grid(row=2,column=3,pady=10, sticky='ew')
 
         # time
         main_time_text= StringVar()
-        main_time_label = Label(detail_frame1,  text='Time' ) 
-        main_time_label.grid(row=0,column=1,padx=10) 
+        main_time_label = Label(detail_frame1,  text='Time :' ) 
+        main_time_label.grid(row=1,column=2,sticky='w') 
         # set time
-        main_time_string = strftime('%H:%M:%S %p')
+        main_time_string = strftime('%H:%M:%S')
         main_time_text.set(main_time_string)  # adding time to Entry
         main_time_show = Label(detail_frame1, textvariable=main_time_text) #  Entry box
-        main_time_show.grid(row=0,column=2) 
-
-        separator = ttk.Separator(detail_frame1, orient='horizontal')
-        separator.grid(row=2,columnspan=3,sticky="ew")
+        main_time_show.grid(row=1,column=3,sticky='w') 
 
         # container: detail_frame(frame2)
         detail_frame2 = Frame(detail_frame)                                 
-        detail_frame2.grid(row=2,column=0, padx=10,pady=10, sticky='nsew')  
-        detail_frame2.columnconfigure(0,weight=1)
-        detail_frame2.rowconfigure(0,weight=1)
+        detail_frame2.grid(row=2,column=0,columnspan=3, padx=10,pady=10, sticky='nsew')  
+        detail_frame2.columnconfigure(0,weight=0)
+        detail_frame2.rowconfigure(0,weight=0)
 
+        task_listbox = Listbox(detail_frame2,
+                        font=list_font,
+                        bg='#FFFFFF',
+                        bd=0,
+                        fg='#21130d',
+                        highlightthickness=0,
+                        selectbackground='#EB6424',
+                        activestyle='none')
+        task_listbox.grid(row=0,column=0,columnspan=3,sticky='nsew')
+        # create scrollbar
+        scrollbar = Scrollbar(detail_frame2)
+        scrollbar.grid(row=0,column=3,sticky='nsew')
+        # set scroll to listbox
+        task_listbox.configure(yscrollcommand=scrollbar.set)
+        scrollbar.configure(command=task_listbox.yview)
+        task_listbox.bind('<<ListboxSelect>>', 
+                lambda e: click_check()) #Select click
+
+        separator = ttk.Separator(detail_frame2, orient='horizontal')
+        separator.grid(row=1,columnspan=3,sticky="ew")
 
         # container: detail_frame(frame3)
         global detail_frame3
@@ -188,13 +236,11 @@ class App:
         btn_add = Button(detail_frame3,text ="+")
         btn_add.bind("<Button>",
                 lambda e: addWindow(self.master))
-        btn_add.grid(row=0, column=1)
+        btn_add.grid(row=0, column=1, sticky='e')
 
-        # label status len(list)
-        text_status = Label(detail_frame3, text ="have "+ str(len(self.listbox)) + " list ")
+        # update status 
+        text_status = Label(detail_frame3, text ="have "+ str(task_listbox.size()) + " task ")
         text_status.grid(row=0, column=0, sticky='w')
-
-
 
         #///////////////////////////
 
@@ -216,7 +262,7 @@ class App:
 
         # button check
         btn_add = Button(mframe1,text ="check", command=check_item)
-        btn_add.grid(row=0, padx=10, pady=10, column=1)
+        btn_add.grid(row=0, padx=10, pady=10, column=1, sticky='ew')
 
         #///////////////////////////
 
@@ -225,7 +271,9 @@ class App:
         notebook.grid(row=1, column=0,padx=10, sticky='nswe')
         # create page page 1 : main, page 2 : complete
         page1 = ttk.Frame(notebook, width=400, height=500)
+        notebook.bind('<<NotebookTabChanged>>',lambda e :changePage())
         page2 = ttk.Frame(notebook, width=400, height=500)
+        notebook.bind('<<NotebookTabChanged>>',lambda e :changePage())
 
         page1.pack(fill='both', expand=True)
         page2.pack(fill='both', expand=True)
@@ -257,7 +305,7 @@ class App:
         main_listbox.configure(yscrollcommand=scrollbar.set)
         scrollbar.configure(command=main_listbox.yview)
         main_listbox.bind('<<ListboxSelect>>', 
-                lambda e: click_item(main_listbox)) #Select click
+                lambda e: click_item_show(main_listbox)) #Select click
         main_listbox.bind('<Double-1>', 
                 lambda e: editWindow(self.master)) #double click
 
@@ -265,8 +313,8 @@ class App:
         separator.grid(sticky="ew")
 
         # insert list in listbox
-        for item in range(len(self.listbox)): 
-	        main_listbox.insert(END, self.listbox[item]) 
+        for item in range(len(self.mlist)): 
+	        main_listbox.insert(END, self.mlist[item]) 
 
         # container: Complete(frame2)
         cframe2 = Frame(page2)                                 
@@ -292,14 +340,14 @@ class App:
         clistbox.configure(yscrollcommand=scrollbar.set)
         scrollbar.configure(command=clistbox.yview)
         clistbox.bind('<<ListboxSelect>>', 
-                lambda e: click_item(clistbox)) #Select click
+                lambda e: click_item_show(clistbox)) #Select click
         
         separator = ttk.Separator(cframe2, orient='horizontal')
         separator.grid(sticky="ew")
 
         # insert list in listbox
-        for item in range(len(self.listbox)): 
-	        clistbox.insert(END, self.listbox[item]) 
+        for item in range(len(self.clist)): 
+	        clistbox.insert(END, self.clist[item]) 
 
         #///////////////////////////
 
@@ -317,7 +365,7 @@ class App:
         btn_add.grid(row=0, column=1)
 
         # label status len(list)
-        text_status = Label(mframe3, text ="have "+ str(len(self.listbox)) + " list ")
+        text_status = Label(mframe3, text ="have "+ str(main_listbox.size()) + " list ")
         text_status.grid(row=0, column=0, sticky='w')
         
         # config for menu
@@ -478,7 +526,7 @@ class editWindow(Toplevel):
         time_entry = Entry(frame2, textvariable=time_text,width=15) #  Entry box
         time_entry.grid(row=0,column=2) 
         # set time
-        time_string = strftime('%H:%M:%S %p')
+        time_string = strftime('%H:%M:%S')
         time_text.set(time_string)  # adding time to Entry
 
         # container: addWindow(frame3)
