@@ -1,9 +1,11 @@
 # importing tkinter module and Widgets
+from asyncio import events
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from tkinter.font import Font
 from tkcalendar import DateEntry # pip install tkcalendar
+from time import strftime
 
 # Creating App class which will contain
 class App:
@@ -12,6 +14,9 @@ class App:
         self.master = master
         # Setting the title of the window
         self.master.title('TODODO')
+
+        self.account = ["Guest", "user1", "user2"]
+        self.listbox = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Australia", "Brazil", "Canada", "China", "Iceland", "Israel", "United States", "Zimbabwe"]
 
         # FUNCTIONS
         def delete_item():
@@ -46,6 +51,7 @@ class App:
                         if listbox.itemcget(count, "fg") == '#ffa364':
                                 listbox.delete(listbox.index(count))
                         count +=1
+                # update status 
                 text_status = Label(mframe3, text ="have "+ str(listbox.size()) + " list ")
                 text_status.grid(row=0, column=0, sticky='w')
 
@@ -59,6 +65,11 @@ class App:
         def popup():
                 messagebox.askyesno("Application","Got it?")
 
+        # combo box
+        def changeAccount(event):
+                pass
+
+
         #///////////////////////////
 
         # define list font
@@ -71,7 +82,7 @@ class App:
         # create account menu
         account_menu = Menu(menubar, tearoff=0)
         account_menu.add_command(label="New",  command=donothing)
-        account_menu.add_command(label="Open", command=donothing)
+        account_menu.add_command(label="Delete", command=donothing)
         account_menu.add_command(label="Save", command=donothing)
 
         account_menu.add_separator()
@@ -92,13 +103,23 @@ class App:
         mframe1.columnconfigure(0,weight=1)
         mframe1.rowconfigure(0,weight=1) 
 
-        # label
+        # combobox
+        account_str=StringVar()        # get account_str
+        combox = ttk.Combobox(mframe1, textvariable=account_str, 
+                                state='readonly', font=('Helvetica 11 bold'))
+        combox["values"] = self.account
+        combox.current(0)
+        combox.grid(row=0, column=0)
+
+        combox.bind("<<ComboboxSelected>>", changeAccount)
+
+        """ # label
         acc = Label(mframe1, text ="Guest", font=('Helvetica 11 bold'))
-        acc.grid(row=0, column=0, padx=10, pady=10, sticky='w')
+        acc.grid(row=0, column=0, padx=10, pady=10, sticky='w') """
 
         # button check
         btn_add = Button(mframe1,text ="check", command=check_item)
-        btn_add.grid(row=0, column=1)
+        btn_add.grid(row=0, padx=10, pady=10, column=1)
 
         # container: master(frame2)
         mframe2 = Frame(self.master)                                 
@@ -129,6 +150,9 @@ class App:
 
         separator = ttk.Separator(self.master, orient='horizontal')
         separator.pack(fill='x')
+        # insert list in listbox
+        for item in range(len(self.listbox)): 
+	        listbox.insert(END, self.listbox[item]) 
 
         # container: master(frame3)
         global mframe3
@@ -143,13 +167,8 @@ class App:
                 lambda e: addWindow(self.master))
         btn_add.grid(row=0, column=1)
 
-        # list in listbox
-        self.list = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Australia", "Brazil", "Canada", "China", "Iceland", "Israel", "United States", "Zimbabwe"]
-        for item in range(len(self.list)): 
-	        listbox.insert(END, self.list[item]) 
-
         # label status len(list)
-        text_status = Label(mframe3, text ="have "+ str(len(self.list)) + " list ")
+        text_status = Label(mframe3, text ="have "+ str(len(self.listbox)) + " list ")
         text_status.grid(row=0, column=0, sticky='w')
         
         # config for menu
@@ -172,8 +191,10 @@ class addWindow(Toplevel):
                 print(str_title)
                 str_detail = detail_text.get()
                 print(str_detail)
-                str_date = date_text
+                str_date = cal.get_date()
                 print(str_date)
+
+                listbox.insert(END, str_title) 
 
                 # update count list
                 text_status = Label(mframe3, text ="have "+ str(listbox.size()) + " list ")
@@ -194,12 +215,11 @@ class addWindow(Toplevel):
         date_label.grid(row=0, column=2,sticky='w')
         cal = DateEntry(self, locale='en_US') 
         cal.grid(row=0, column=3, padx=10, sticky='w')
-        date_text = cal.get_date()
 
         # container: addWindow(frame2)
         frame2 = Frame(self)  
         frame2.grid(row=1, column=0, columnspan=4, padx=10, pady=10, sticky='nsew')      
-        frame2.columnconfigure(0,weight=2)
+        frame2.columnconfigure(0,weight=1)
         frame2.rowconfigure(0,weight=0) 
 
         # detail
@@ -207,7 +227,17 @@ class addWindow(Toplevel):
         detail_label = Label(frame2, text='Detail')
         detail_label.grid(row=0, column=0, sticky='w')
         detail_entry = Entry(frame2, textvariable=detail_text)
-        detail_entry.grid(row=1, sticky='nswe')
+        detail_entry.grid(row=1, columnspan=4, pady=10, sticky='nswe')
+
+        # time
+        time_text= StringVar()
+        time_label = Label(frame2,  text='Time' ) 
+        time_label.grid(row=0,column=1,padx=10) 
+        time_entry = Entry(frame2, textvariable=time_text,width=15) #  Entry box
+        time_entry.grid(row=0,column=2) 
+        # set time
+        time_string = strftime('%H:%M:%S %p')
+        time_text.set(time_string)  # adding time to Entry
 
         # container: addWindow(frame3)
         frame3 = Frame(self)  
@@ -215,7 +245,7 @@ class addWindow(Toplevel):
         frame3.columnconfigure(0,weight=1)
         frame3.rowconfigure(0,weight=1)
 
-        # add button
+        # button
         btn_done = Button(frame3, text ="Done", command=add_list)
         btn_done.grid(row=0, column=0, sticky='e', padx=10)
         btn_add = Button(frame3, text ="Cancel", command=self.destroy)
@@ -231,6 +261,10 @@ class editWindow(Toplevel):
         super().__init__(master = master)
         self.title("Update List")
 
+        # index of selection
+        index = int(listbox.curselection()[0])
+        print(index)
+
         def setTextInput(text, entry):
                 entry.delete(0,"end")
                 entry.insert(0, text)
@@ -239,36 +273,19 @@ class editWindow(Toplevel):
                 listbox.delete(listbox.index(index))
                 listbox.insert(index, updated_item)
 
-        def edit_list():
-                try :
-                        index = int(listbox.curselection()[0])
-                        print(index)
+        def edit_list(index):
+                # string form entry
+                str_title = title_text.get()
+                print(str_title)
+                str_detail = detail_text.get()
+                print(str_detail)
+                str_date = date_text
+                print(str_date)
 
-                        # string to entry
-                        value = listbox.get(index)      # text selection form listbox
-                        #setTextInput(value, title_entry)
-                        # date
-                        cal = DateEntry(self, selectmode = 'day',
-                                        year = 2020, month = 5,
-                                        day = 22)
-                        cal.grid(row=0, column=3, padx=10, sticky='w')
-                        # detail
-                        #setTextInput(value, detail_entry)
+                # update_listbox
+                update_listbox(index, str_title)
 
-                        # string form entry
-                        str_title = title_text.get()
-                        print(str_title)
-                        str_detail = detail_text.get()
-                        print(str_detail)
-                        str_date = date_text
-                        print(str_date)
-
-                        # update_listbox
-                        update_listbox(index, str_title)
-
-                        #self.destroy()
-                except: pass
-
+                self.destroy()
 
         # title
         title_text = StringVar()
@@ -276,14 +293,20 @@ class editWindow(Toplevel):
         title_label.grid(row=0, column=0,sticky='w', padx=10, pady=10)
         title_entry = Entry(self, textvariable=title_text)
         title_entry.grid(row=0, column=1, padx=10, pady=10)
+        # string to entry
+        value = listbox.get(index)      # text selection form listbox
+        setTextInput(value, title_entry)
 
         # date
         date_label = Label(self, text ="Date")
         date_label.grid(row=0, column=2,sticky='w')
-        cal = DateEntry(self, locale='en_US') 
-        cal.grid(row=0, column=3, padx=10, sticky='w')
+        cal = DateEntry(self, selectmode = 'day',
+                        year = 2020, month = 5,
+                        day = 22)
+        cal.grid(row=0, column=3, padx=10, sticky='w') 
         date_text = cal.get_date()
-
+        print(date_text)
+        
         # container: addWindow(frame2)
         frame2 = Frame(self)  
         frame2.grid(row=1, column=0, columnspan=4, padx=10, pady=10, sticky='nsew')      
@@ -295,7 +318,19 @@ class editWindow(Toplevel):
         detail_label = Label(frame2, text='Detail')
         detail_label.grid(row=0, column=0, sticky='w')
         detail_entry = Entry(frame2, textvariable=detail_text)
-        detail_entry.grid(row=1, sticky='nswe')
+        detail_entry.grid(row=1, columnspan=4, pady=10, sticky='nswe')
+        # string to entry
+        #setTextInput(value, detail_entry)
+
+        # time
+        time_text= StringVar()
+        time_label = Label(frame2,  text='Time' ) 
+        time_label.grid(row=0,column=1,padx=10) 
+        time_entry = Entry(frame2, textvariable=time_text,width=15) #  Entry box
+        time_entry.grid(row=0,column=2) 
+        # set time
+        time_string = strftime('%H:%M:%S %p')
+        time_text.set(time_string)  # adding time to Entry
 
         # container: addWindow(frame3)
         frame3 = Frame(self)  
@@ -303,8 +338,8 @@ class editWindow(Toplevel):
         frame3.columnconfigure(0,weight=1)
         frame3.rowconfigure(0,weight=1)
 
-        # add button
-        btn_done = Button(frame3, text ="Done", command=edit_list)
+        # button
+        btn_done = Button(frame3, text ="Done", command= lambda: edit_list(index))
         btn_done.grid(row=0, column=0, sticky='e', padx=10)
         btn_add = Button(frame3, text ="Cancel", command=self.destroy)
         btn_add.grid(row=0, column=1, sticky='e', padx=10)
