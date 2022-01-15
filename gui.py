@@ -19,10 +19,19 @@ class App:
         def fetch_data():
                 self.note.loadJson()
                 self.todo = self.note.getTodos()
+                self.list = []
                 for n in self.todo:
                         self.list.append(n['title'])
-                print(self.list)
+                listbox.delete(0, END)
+                for item in range(len(self.list)): 
+                        listbox.insert(END, self.list[item])
+                        listbox.itemconfig("end", fg = "#ffa364" if self.todo[item]['completed'] else "#21130d")
 
+        def update_json():
+                self.note.updateCurrentUser(self.todo)
+                self.note.toJson()
+                fetch_data()
+        
         # FUNCTIONS
         def delete_item():
                 listbox.delete(ANCHOR)
@@ -33,18 +42,27 @@ class App:
         def check_item():
                 try :
                         index = int(listbox.curselection()[0])
+                        fetch_data()
                         # not done
                         if listbox.itemcget(index, "fg") == "#ffa364":
                                 listbox.itemconfig(
-                                        listbox.curselection(),
+                                        index,
                                         fg='#21130d')
                                 # get rid of selection bar
+                                self.todo[index]['completed'] = False
+                                update_json()
                                 listbox.select_clear(0, END)
+                                print('hell')
+                                return
+
                         
                         # done
                         listbox.itemconfig(
-                                listbox.curselection(),
+                                index,
                                 fg='#ffa364')
+                        self.todo[index]['completed'] = True
+                        update_json()
+                        print('hell')
                         # get rid of selection bar
                         listbox.select_clear(0, END)
                 except: pass
@@ -156,8 +174,6 @@ class App:
 
         # self.list = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Australia", "Brazil", "Canada", "China", "Iceland", "Israel", "United States", "Zimbabwe"]
         fetch_data()
-        for item in range(len(self.list)): 
-	        listbox.insert(END, self.list[item]) 
 
         # label status len(list)
         text_status = Label(mframe3, text ="have "+ str(len(self.list)) + " list ")
@@ -165,6 +181,7 @@ class App:
         
         # config for menu
         self.master.config(menu=menubar)
+        
 
 
 #/////////////////////////////////////////////////////////////////////
@@ -176,13 +193,37 @@ class addWindow(Toplevel):
         # set self => master 
         super().__init__(master = master)
         self.title("Add List")
+        self.note = Note()
+        self.todo = {}
+        self.list = []
+
 
         def add_list():
                 str_title = title_text.get()
+                self.note.createTodo(str_title, "2022/2/1")
                 listbox.insert(END, str_title)
+                update_json()
                 self.destroy()
                 text_status = Label(mframe3, text ="have "+ str(listbox.size()) + " list ")
                 text_status.grid(row=0, column=0, sticky='w')
+
+        def fetch_data():
+                self.note.loadJson()
+                self.todo = self.note.getTodos()
+                self.list = []
+                for n in self.todo:
+                        self.list.append(n['title'])
+                listbox.delete(0, END)
+                for item in range(len(self.list)): 
+                        listbox.insert(END, self.list[item])
+                        listbox.itemconfig("end", fg = "#ffa364" if self.todo[item]['completed'] else "#21130d")
+
+        def update_json():
+                self.note.updateCurrentUser(self.todo)
+                self.note.toJson()
+                fetch_data()
+
+        fetch_data()
 
         # title
         title_text = StringVar()
