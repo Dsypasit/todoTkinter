@@ -63,7 +63,7 @@ class App:
 
         def changeAccount(event):
                 refresh()
-                self.mlist 
+                self.mlist
                 self.clist
                 
         def refresh():
@@ -129,34 +129,73 @@ class App:
 
         def check_item():
                 try :
-                        index = int(main_listbox.curselection()[0])
-                        value_title = main_listbox.get(index)      # text selection form listbox
+                        index=notebook.index(notebook.select())
+                        if index == 0:
+                                index = int(main_listbox.curselection()[0])
+                                value_title = main_listbox.get(index)      # text selection form listbox
 
-                        clistbox.insert(END, value_title) 
+                                clistbox.insert(END, value_title) 
 
-                        main_listbox.delete(ANCHOR)
-                        # update status 
-                        text_status = Label(mframe3, text ="have "+ str(main_listbox.size()) + " list ")
-                        text_status.grid(row=0, column=0, sticky='w')
+                                main_listbox.delete(ANCHOR)
+                                # update status 
+                                text_status = Label(mframe3, text ="have "+ str(main_listbox.size()) + " list ")
+                                text_status.grid(row=0, column=0, sticky='w')
+                        elif index == 1:
+                                index = int(clistbox.curselection()[0])
+                                value_title = clistbox.get(index)      # text selection form listbox
+
+                                main_listbox.insert(END, value_title) 
+
+                                clistbox.delete(ANCHOR)
+                                # update status 
+                                text_status = Label(mframe3, text ="have "+ str(main_listbox.size()) + " list ")
+                                text_status.grid(row=0, column=0, sticky='w')
 
                 except: pass
 
         def click_item_show(listbox):
                 try : 
                         task_listbox.delete(0,END)    
-                        task_text.set('')       # empty entry
+                        task_text.set('')       # empty entry 
 
                         if listbox == clistbox:
-                                pass
+                                # enable btn_addtask & btn_del
+                                btn_add = Button(detail_frame3,text ="+", state= DISABLED)
+                                btn_add.grid(row=0, column=6, sticky='e')
+
+                                btn_del = Button(detail_frame1,text ="Delete List", state= DISABLED)
+                                btn_del.grid(row=2,column=3,pady=10, sticky='ew')
+
+                                index = int(listbox.curselection()[0])
+                                value_title = listbox.get(index)      # text selection form listbox
+
+                                # show title 
+                                main_title_text.set(value_title)
+                                # show date
+                                main_cal = DateEntry(detail_frame1, selectmode = 'day',
+                                year = 2020, month = 5,
+                                day = 22)
+                                main_cal.grid(row=0, column=3, padx=10, sticky='w') 
+                                # show detail
+                                value_detail = ''
+                                main_detail_text.set(value_detail)
+                                # set time
+                                value_time = strftime('%H:%M:%S')
+                                main_time_text.set(value_time)  # adding time to Entry
+
+                                # status 
+                                task_status = Label(detail_frame3, text ="have "+ str(task_listbox.size()) + " task ")
+                                task_status.grid(row=0, column=0, sticky='w')
                                 
                         elif listbox == main_listbox:
+                                print()
                                 # enable btn_addtask & btn_del 
-                                btn_add = Button(detail_frame3,text ="+",)
+                                btn_add = Button(detail_frame3,text ="+")
                                 btn_add.bind("<Button>",
                                         lambda e: addtask())
                                 btn_add.grid(row=0, column=6, sticky='e')
  
-                                btn_del = Button(detail_frame1,text ="Delete List", state= NORMAL, command=delete_item)
+                                btn_del = Button(detail_frame1,text ="Delete List", command=delete_item)
                                 btn_del.grid(row=2,column=3,pady=10, sticky='ew')
 
                                 index = int(listbox.curselection()[0])
@@ -186,12 +225,9 @@ class App:
                 except: pass
 
         def del_alldone():
-                clistbox.delete(0,END)  
-
-        def donothing():
-                filewin = Toplevel(root)
-                button = Button(filewin, text="Do nothing button")
-                button.pack()
+                ask = messagebox.askokcancel("Are you sure?","Are you sure to delete all complete")
+                if ask:
+                        clistbox.delete(0,END)  
 
         def addtask():
                 task_listbox.insert(END, task_text.get())
@@ -199,6 +235,8 @@ class App:
                 # status 
                 task_status = Label(detail_frame3, text ="have "+ str(task_listbox.size()) + " task ")
                 task_status.grid(row=0, column=0, sticky='w')
+                task_listbox.select_clear(0, END)
+
 
         #///////////////////////////
 
