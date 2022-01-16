@@ -1,6 +1,7 @@
 from todo import TodoList
 from user import User
 import json
+from datetime import datetime
 class Note:
     def __init__(self):
         self.todoAll = []
@@ -23,7 +24,7 @@ class Note:
         pass
 
     def sortTodo(self):
-        pass
+        self.todoAll.sort( key=lambda a:datetime.strptime(a['endDate'], "%Y-%m-%d") )
 
     def updateCurrentUser(self, l=[]):
         if len(l)>0:
@@ -53,10 +54,13 @@ if __name__ == "__main__":
     no = Note()
     no.createTodo("hi", "2011-1-2", "hi1")
     no.createTodo("hi2", "2011-1-3", "hihi")
+    no.createTodo("hi2", "2011-1-14", "hihi")
+    no.createTodo("hi2", "2011-2-3", "hihi")
     no.checkUser("ong")
     no.createTodo("hi2", "2011-1-3", "hellow")
     no.createTodo("hi2", "2011-1-3", "hhhhh")
     no.toJson()
-    print(no.userTodo)
     a = no.loadJson()
-    print(a.keys())
+    no.checkUser('user1')
+    no.sortTodo()
+    print(no.getTodos())

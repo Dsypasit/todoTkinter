@@ -323,7 +323,7 @@ class editWindow(Toplevel):
                         self.destroy()
 
                         # update_listbox
-                        update_listbox(self.index, str_title)
+                        # update_listbox(self.index, str_title)
 
                         #self.destroy()
                 # except: pass
