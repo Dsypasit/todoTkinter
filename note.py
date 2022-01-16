@@ -7,10 +7,11 @@ class Note:
         self.user = User()
         self.userTodo = {}
 
-    def createTodo(self, title, date):      # create Todo
+    def createTodo(self, title, date, detail):      # create Todo
         todo = TodoList()
         todo.setTitle(title)
         todo.setDate(date)
+        todo.setDetail(detail)
         self.todoAll.append(todo.to_dict())
         self.updateCurrentUser()
 
@@ -50,11 +51,11 @@ class Note:
             
 if __name__ == "__main__":
     no = Note()
-    no.createTodo("hi", "2011/1/2")
-    no.createTodo("hi2", "2011/1/3")
+    no.createTodo("hi", "2011-1-2", "hi1")
+    no.createTodo("hi2", "2011-1-3", "hihi")
     no.checkUser("ong")
-    no.createTodo("hi2", "2011/1/3")
-    no.createTodo("hi2", "2011/1/3")
+    no.createTodo("hi2", "2011-1-3", "hellow")
+    no.createTodo("hi2", "2011-1-3", "hhhhh")
     no.toJson()
     print(no.userTodo)
     a = no.loadJson()

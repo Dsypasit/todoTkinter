@@ -6,12 +6,14 @@ class TodoList:
         self.pinned = False
         self.completed = False
         self.dueDate = 0
+        self.detail = ""
 
     def to_dict(self):      # change attribute to dict
         return {'title': self.title,
                 'endDate': self.getDateString(),
                 'completed': self.completed,
-                'pinned': self.pinned}
+                'pinned': self.pinned,
+                'detail': self.detail}
 
 
     def getDate(self):
@@ -23,8 +25,11 @@ class TodoList:
     def getComplete(self):
         return self.orderList
 
+    def setDetail(self, de):
+        self.detail = de
+
     def setDate(self, dt):
-        date = pendulum.from_format(dt, 'YYYY/MM/DD')   # specify date formate
+        date = pendulum.from_format(dt, 'YYYY-MM-DD')   # specify date formate
         self.dueDate = date
 
     def setTitle(self, title):
@@ -45,6 +50,6 @@ class TodoList:
 
 if __name__ == "__main__":
     t = TodoList()
-    t.setDate('2021/21/10')
+    t.setDate('2021-1-10')
     print(type(t.getDate()))
     print(t.getDateString())

@@ -31,7 +31,7 @@ class TodoTest(unittest.TestCase):
     def test_todo_class_date(self):
         todo = Todo()
         todo.setDate("2001/1/2")
-        self.assertEqual(todo.getDate(), pendulum.from_format("2001/1/2", "YYYY/MM/DD"))
+        self.assertEqual(todo.getDate(), pendulum.from_format("2001/1/2", "YYYY-MM-DD"))
         self.assertEqual(todo.getDateString(), "2001-01-02")
         with self.assertRaises(ValueError):
             todo.setDate("2001/1-2")
