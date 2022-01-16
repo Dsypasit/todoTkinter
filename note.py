@@ -48,6 +48,9 @@ class Note:
         else:
             self.todoAll = []   # else create emty list
         return self.todoAll
+    
+    def getAccout(self):
+        return list(self.userTodo.keys())
 
             
 if __name__ == "__main__":
