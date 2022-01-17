@@ -1,20 +1,22 @@
 import pendulum
+from task import Task
 
-class TodoList:
+class TodoList(Task):
     def __init__(self):
         self.title = ""
         self.pinned = False
         self.completed = False
         self.dueDate = 0
         self.detail = ""
+        self.task = []
 
     def to_dict(self):      # change attribute to dict
         return {'title': self.title,
                 'endDate': self.getDateString(),
                 'completed': self.completed,
                 'pinned': self.pinned,
-                'detail': self.detail}
-
+                'detail': self.detail,
+                'task': self.task}
 
     def getDate(self):
         return self.dueDate     # return pendulum date
@@ -46,6 +48,12 @@ class TodoList:
         if(not isinstance(pin, bool)):     # if other than boolean raise TypeError
             raise TypeError
         self.pinned = pin
+    
+    def addTask(self, task):
+        self.task.append(task)
+    
+    def removeTask(self, index):
+        self.task.pop(index)
 
 
 if __name__ == "__main__":

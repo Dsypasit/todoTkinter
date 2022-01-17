@@ -197,8 +197,9 @@ class App:
 
                 except: pass
 
-        def click_item_show(listbox, index_in=None):
+        def click_item_show(listbox, index_in):
                 # try : 
+                        global main_listbox, clistbox
                         fetch_data()
                         task_listbox.delete(0,END)    
                         task_text.set('')       # empty entry
@@ -218,6 +219,7 @@ class App:
                                 
                                 #set index
                                 if index_in == None:
+                                        print(listbox.curselection())
                                         index = int(listbox.curselection()[0])
                                 else:
                                         index = index_in
@@ -242,6 +244,10 @@ class App:
                                 value_time = strftime('%H:%M:%S')
                                 main_time_text.set(value_time)  # adding time to Entry
 
+                                # set task
+                                for i in self.note.todoIncompleted[index]['task']:
+                                        task_listbox.insert(END, i)
+
                                 # status 
                                 task_status = Label(detail_frame3, text ="have "+ str(task_listbox.size()) + " task ")
                                 task_status.grid(row=0, column=0, sticky='w')
@@ -259,7 +265,11 @@ class App:
                 button.pack()
 
         def addtask():
+                global main_listbox
                 task_listbox.insert(END, task_text.get())
+                index = int(main_listbox.curselection()[0])
+                self.note.todoIncompleted[index]['task'].append(task_text.get())
+                update_json()
                 task_text.set('')
                 # status 
                 task_status = Label(detail_frame3, text ="have "+ str(task_listbox.size()) + " task ")
@@ -699,6 +709,7 @@ class editWindow(Toplevel):
 
         def fetch_data():
                 self.note.loadJson()
+                self.note.sortTodo()
                 self.note.checkUser(self.name)
                 self.todo = self.note.getTodos()
                 self.mlistTodo = self.note.getTodoIncompleted()
@@ -712,9 +723,10 @@ class editWindow(Toplevel):
                 fetch_listbox()
 
         fetch_data()
+        print(self.note.getTodoIncompletedTitle())
 
         # index = int(listbox.curselection()[0])
-        # print(self.index)
+        print(self.index)
 
 
         # title
@@ -730,10 +742,13 @@ class editWindow(Toplevel):
         # date
         edit_date_label = Label(self, text ="Date")
         edit_date_label.grid(row=0, column=2,sticky='w')
-        select_date = self.mlistTodo[self.index]['endDate'].split("-")
-        self.edit_cal = DateEntry(self, selectmode = 'day',
-                                        year = int(select_date[0]), month = int(select_date[1]),
-                                        day = int(select_date[2]))
+        # select_date = self.mlistTodo[self.index]['endDate'].split("-")
+        select_date = self.mlistTodo[self.index]['endDate']
+        self.edit_cal = DateEntry(self, locale='en_US') 
+        self.edit_cal.set_date(datetime.strptime(select_date, "%Y-%m-%d"))
+        # self.edit_cal = DateEntry(self, selectmode = 'day',
+        #                                 year = int(select_date[0]), month = int(select_date[1]),
+        #                                 day = int(select_date[2]))
         self.edit_cal.grid(row=0, column=3, padx=10, sticky='w') 
         
         # container: addWindow(frame2)

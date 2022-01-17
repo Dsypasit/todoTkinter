@@ -28,6 +28,7 @@ class Note:
                 self.todoCompleted.append(todo)
             else:
                 self.todoIncompleted.append(todo)
+        self.sortTodo()
 
     def findTodo(self, index, select):
         l = []
@@ -85,7 +86,6 @@ class Note:
         else:
             self.checkUser(self.user.getName())
         self.separateTodo()
-        self.sortTodo()
         return self.userTodo
         
     def checkUser(self, user):
