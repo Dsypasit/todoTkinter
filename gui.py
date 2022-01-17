@@ -32,17 +32,19 @@ class App:
                                 return n
 
         def fetch_listbox():
+                self.note.checkUser(account_str.get())
                 mlist = self.note.getTodoIncompletedTitle()
                 clist = self.note.getTodoCompletedTitle()
                 main_listbox.delete(0, END)
                 clistbox.delete(0, END)
                 for item in mlist:
+                        print(item)
                         main_listbox.insert(END, item)
                 for item in clist:
                         clistbox.insert(END, item)
 
         def fetch_data():
-                self.note.loadJson()
+                self.note.loadJson(account_str.get())
                 self.todo = self.note.getTodos()
                 self.mlist = []
                 self.clist = []
@@ -54,6 +56,7 @@ class App:
                                 self.mlist.append(n['title'])
 
         def update_json():
+                self.note.updateCurrentUser()
                 self.note.toJson()
                 fetch_data()
         
@@ -100,10 +103,13 @@ class App:
         def delete_account():
                 ask = messagebox.askokcancel("Are you sure?","Are you sure to delete \"{}\" account".format(account_str.get()))
                 if ask:
+                        self.note.delete_user(account_str.get())
                         self.account.remove(account_str.get())
                         combox["values"] = self.account
                         combox.current(0)
                         refresh()
+                        fetch_data()
+                        fetch_listbox()
 
         def changeAccount(event):
                 refresh()
@@ -451,7 +457,7 @@ class App:
         main_listbox.bind('<<ListboxSelect>>', 
                 lambda e: click_item_show(main_listbox, int(e.widget.curselection()[0]))) #Select click
         main_listbox.bind('<Double-1>', 
-                lambda e: editWindow(self.master, e, click_item_show, main_listbox, name=self.note.user.getName())) #double click
+                lambda e: editWindow(self.master, e, click_item_show, main_listbox, name=account_str.get())) #double click
 
         separator = ttk.Separator(mframe2, orient='horizontal')
         separator.grid(sticky="ew")
@@ -505,7 +511,7 @@ class App:
         # button add
         btn_add = Button(mframe3,text ="+")
         btn_add.bind("<Button>",
-                lambda e: addWindow(self.master, name = self.note.user.getName()))
+                lambda e: addWindow(self.master, name = account_str.get()))
         btn_add.grid(row=0, column=1)
 
 

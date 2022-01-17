@@ -9,6 +9,7 @@ class Note:
         self.userTodo = {}
         self.todoCompleted = []
         self.todoIncompleted = []
+        self.filename = "data_file.json"
 
     def createTodo(self, title, date, detail):      # create Todo
         todo = TodoList()
@@ -70,14 +71,19 @@ class Note:
         self.userTodo[self.user.getName()] = self.todoCompleted + self.todoIncompleted
     
     def toJson(self):
-        self.updateCurrentUser()
-        with open("data_file.json", "w") as write_file:     # convert dict to json file
+        with open(self.filename, "w") as write_file:     # convert dict to json file
             json.dump(self.userTodo, write_file)
 
-    def loadJson(self):
-        with open("data_file.json", "r") as read_file:  # convert json file to dict
+    def loadJson(self, name=""):
+        with open(self.filename, "r") as read_file:  # convert json file to dict
             self.userTodo = json.load(read_file)
-        self.checkUser(self.user.getName())
+        user_all = list(self.userTodo.keys())
+        if len(name)>0:
+            self.checkUser(name)
+        elif(len(user_all)>0):
+            self.checkUser(user_all[0])
+        else:
+            self.checkUser(self.user.getName())
         self.separateTodo()
         self.sortTodo()
         return self.userTodo
@@ -93,6 +99,15 @@ class Note:
     
     def getAccout(self):
         return list(self.userTodo.keys())
+    
+    def load_file(self, filename):
+        self.filename = filename
+        self.loadJson()
+    
+    def delete_user(self, name):
+        del self.userTodo[name]
+        self.toJson()
+        self.user.changeName(self.getAccout()[0])
 
             
 if __name__ == "__main__":
