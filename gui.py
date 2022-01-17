@@ -38,7 +38,6 @@ class App:
                 main_listbox.delete(0, END)
                 clistbox.delete(0, END)
                 for item in mlist:
-                        print(item)
                         main_listbox.insert(END, item)
                 for item in clist:
                         clistbox.insert(END, item)
@@ -248,7 +247,9 @@ class App:
                 # except: pass
 
         def del_alldone():
-                clistbox.delete(0,END)  
+                clistbox.delete(0,END)
+                self.note.todoCompleted = []
+                update_json()
 
         def donothing():
                 filewin = Toplevel(root)
