@@ -108,6 +108,11 @@ class Note:
         del self.userTodo[name]
         self.toJson()
         self.user.changeName(self.getAccout()[0])
+    
+    def export_file(self, path):
+        self.filename = path
+        self.toJson()
+
 
             
 if __name__ == "__main__":

@@ -32,7 +32,6 @@ class App:
                                 return n
 
         def fetch_listbox():
-                self.note.checkUser(account_str.get())
                 mlist = self.note.getTodoIncompletedTitle()
                 clist = self.note.getTodoCompletedTitle()
                 main_listbox.delete(0, END)
@@ -44,6 +43,7 @@ class App:
 
         def fetch_data():
                 self.note.loadJson(account_str.get())
+                self.note.checkUser(account_str.get())
                 self.todo = self.note.getTodos()
                 self.mlist = []
                 self.clist = []
@@ -143,7 +143,9 @@ class App:
                 task_listbox.delete(0,END)
 
         def delete_item():
+                self.note.todoIncompleted.pop(int(main_listbox.curselection()[0]))
                 main_listbox.delete(ANCHOR)
+                update_json()
                 # update status 
                 text_status = Label(mframe3, text ="have "+ str(main_listbox.size()) + " list ")
                 text_status.grid(row=0, column=0, sticky='w')
