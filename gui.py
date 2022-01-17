@@ -31,45 +31,29 @@ class App:
                         if n['title'] == title:
                                 return n
 
-        def fetch_data2():
-                self.note.loadJson()
-                self.todo = self.note.getTodos()
-                self.mlist = []
-                self.account = self.note.getAccout()
-                for n in self.todo:
-                        if n['completed']:
-                                self.clist.append(n['title'])
-                        else:
-                                self.mlist.append(n['title'])
-                
-                        
-
-        def update_json2():
-                self.note.updateCurrentUser(self.todo)
-                self.note.toJson()
-                fetch_data2()
+        def fetch_listbox():
+                mlist = self.note.getTodoIncompletedTitle()
+                clist = self.note.getTodoCompletedTitle()
+                main_listbox.delete(0, END)
+                clistbox.delete(0, END)
+                for item in mlist:
+                        main_listbox.insert(END, item)
+                for item in clist:
+                        clistbox.insert(END, item)
 
         def fetch_data():
                 self.note.loadJson()
                 self.todo = self.note.getTodos()
                 self.mlist = []
+                self.clist = []
                 self.account = self.note.getAccout()
                 for n in self.todo:
                         if n['completed']:
                                 self.clist.append(n['title'])
                         else:
                                 self.mlist.append(n['title'])
-                main_listbox.delete(0, END)
-                clistbox.delete(0, END)
-                for item in range(len(self.mlist)):
-                        main_listbox.insert(END, self.mlist[item])
-                for item in range(len(self.clist)):
-                        clistbox.insert(END, self.clist[item])
-                
-                        
 
         def update_json():
-                self.note.updateCurrentUser(self.todo)
                 self.note.toJson()
                 fetch_data()
         
@@ -105,6 +89,8 @@ class App:
 
         def add_account():      # add new account in combo box
                 self.account.append(text_new_account.get())
+                self.note.checkUser(text_new_account.get())
+                update_json()
                 #text_new_account.get()
                 combox["values"] = self.account
                 combox.current(END)
@@ -123,8 +109,7 @@ class App:
                 refresh()
                 self.note.checkUser(account_str.get())
                 fetch_data()
-                self.mlist 
-                self.clist
+                fetch_listbox()
                 
         def refresh():
                 clear_all_listbox()
@@ -192,7 +177,10 @@ class App:
                 try :
                         index = int(main_listbox.curselection()[0])
                         value_title = main_listbox.get(index)      # text selection form listbox
-
+                        for i in self.todo:
+                                if i['title'] == self.mlist[index]:
+                                        i['completed'] = True
+                        update_json()
                         clistbox.insert(END, value_title) 
 
                         main_listbox.delete(ANCHOR)
@@ -204,7 +192,7 @@ class App:
 
         def click_item_show(listbox, index_in=None):
                 # try : 
-                        fetch_data2()
+                        fetch_data()
                         task_listbox.delete(0,END)    
                         task_text.set('')       # empty entry
 
@@ -411,7 +399,6 @@ class App:
         combox = ttk.Combobox(mframe1, textvariable=account_str, 
                                 state='readonly', font=('Helvetica 11 bold'))
         combox["values"] = self.account
-        print(self.account)
         combox.current(0)
         combox.grid(row=0, column=0)
 
@@ -462,9 +449,9 @@ class App:
         main_listbox.configure(yscrollcommand=scrollbar.set)
         scrollbar.configure(command=main_listbox.yview)
         main_listbox.bind('<<ListboxSelect>>', 
-                lambda e: click_item_show(main_listbox)) #Select click
+                lambda e: click_item_show(main_listbox, int(e.widget.curselection()[0]))) #Select click
         main_listbox.bind('<Double-1>', 
-                lambda e: editWindow(self.master, e, click_item_show, main_listbox)) #double click
+                lambda e: editWindow(self.master, e, click_item_show, main_listbox, name=self.note.user.getName())) #double click
 
         separator = ttk.Separator(mframe2, orient='horizontal')
         separator.grid(sticky="ew")
@@ -518,12 +505,13 @@ class App:
         # button add
         btn_add = Button(mframe3,text ="+")
         btn_add.bind("<Button>",
-                lambda e: addWindow(self.master))
+                lambda e: addWindow(self.master, name = self.note.user.getName()))
         btn_add.grid(row=0, column=1)
 
 
         # self.list = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Australia", "Brazil", "Canada", "China", "Iceland", "Israel", "United States", "Zimbabwe"]
         fetch_data()
+        fetch_listbox()
 
         # label status len(list)
         text_status = Label(mframe3, text ="have "+ str(main_listbox.size()) + " list ")
@@ -539,7 +527,7 @@ class App:
 # class for new window add
 class addWindow(Toplevel):
      
-    def __init__(self, master = None):
+    def __init__(self, master = None, name=None):
         # set self => master 
         super().__init__(master = master)
         self.title("Add List")
@@ -548,12 +536,13 @@ class addWindow(Toplevel):
         self.clist = []
         self.todo = []
         self.tasklist =[]
+        self.name = name
 
 
         def add_list():
                 # string form entry
-                str_title = title_text.get()
-                str_detail = detail_text.get()
+                str_title = add_title_text.get()
+                str_detail = add_detail_text.get()
                 str_date = self.cal.get_date().strftime("%Y-%m-%d")
                 self.note.createTodo(str_title, str_date, str_detail)
                 main_listbox.insert(END, str_title)
@@ -562,32 +551,31 @@ class addWindow(Toplevel):
                 text_status = Label(mframe3, text ="have "+ str(main_listbox.size()) + " list ")
                 text_status.grid(row=0, column=0, sticky='w')
 
-        def fetch_data():
-                self.note.loadJson()
-                self.todo = self.note.getTodos()
-                self.clist = []
-                self.mlist = []
-                for n in self.todo:
-                        if n['completed']:
-                                self.clist.append(n['title'])
-                        else:
-                                self.mlist.append(n['title'])
+        def fetch_listbox():
+                mlist = self.note.getTodoIncompletedTitle()
+                clist = self.note.getTodoCompletedTitle()
                 main_listbox.delete(0, END)
                 clistbox.delete(0, END)
-                for item in range(len(self.mlist)):
-                        main_listbox.insert(END, self.mlist[item])
-                for item in range(len(self.list)):
-                        clistbox.insert(END, self.clist[item])
-                        
+                for item in mlist:
+                        main_listbox.insert(END, item)
+                for item in clist:
+                        clistbox.insert(END, item)
 
+        def fetch_data():
+                self.note.loadJson()
+                self.note.checkUser(self.name)
+                self.todo = self.note.getTodos()
+                self.mlistTodo = self.note.getTodoIncompleted()
+                self.clistTodo = self.note.getTodoCompleted()
+                self.account = self.note.getAccout()
+        
         def update_json():
-                self.note.updateCurrentUser(self.todo)
+                self.note.updateCurrentUser()
                 self.note.toJson()
                 fetch_data()
+                fetch_listbox()
 
         fetch_data()
-
-
 
                 
 
@@ -644,13 +632,16 @@ class addWindow(Toplevel):
 # class for new window update
 class editWindow(Toplevel):
      
-    def __init__(self, master, e, update_func=None, listbox=None):
+    def __init__(self, master, e, update_func=None, listbox=None, name=None):
         # set self => master 
         super().__init__(master = master)
         self.title("Update List")
+        self.name = name
         self.note = Note()
         self.todo = {}
         self.clist = []
+        self.mlistTodo = []
+        self.clistTodo = []
         self.mlist = []
         self.update_func = update_func
         self.index = int(e.widget.curselection()[0])
@@ -673,10 +664,10 @@ class editWindow(Toplevel):
                         str_detail = edit_detail_entry.get()
                         str_date1 = self.edit_cal.get_date().strftime("%Y-%m-%d")
 
-                        self.todo[self.index]['title'] = str_title
-                        self.todo[self.index]['endDate'] = str_date1
-                        self.todo[self.index]['detail'] = str_detail
-
+                        todo = self.note.getTodoIncompleted()
+                        todo[self.index]['title'] = str_title
+                        todo[self.index]['endDate'] = str_date1
+                        todo[self.index]['detail'] = str_detail
                         update_json()
                         self.update_func(listbox, index)
                         self.destroy()
@@ -686,29 +677,30 @@ class editWindow(Toplevel):
 
                         #self.destroy()
                 # except: pass
+        
+        def fetch_listbox():
+                mlist = self.note.getTodoIncompletedTitle()
+                clist = self.note.getTodoCompletedTitle()
+                main_listbox.delete(0, END)
+                clistbox.delete(0, END)
+                for item in mlist:
+                        main_listbox.insert(END, item)
+                for item in clist:
+                        clistbox.insert(END, item)
 
         def fetch_data():
                 self.note.loadJson()
+                self.note.checkUser(self.name)
                 self.todo = self.note.getTodos()
-                self.clist = []
-                self.mlist = []
-                for n in self.todo:
-                        if n['completed']:
-                                self.clist.append(n['title'])
-                        else:
-                                self.mlist.append(n['title'])
-                main_listbox.delete(0, END)
-                clistbox.delete(0, END)
-                for item in range(len(self.mlist)):
-                        main_listbox.insert(END, self.mlist[item])
-                for item in range(len(self.clist)):
-                        clistbox.insert(END, self.clist[item])
-                        
+                self.mlistTodo = self.note.getTodoIncompleted()
+                self.clistTodo = self.note.getTodoCompleted()
+                self.account = self.note.getAccout()
 
         def update_json():
-                self.note.updateCurrentUser(self.todo)
+                self.note.updateCurrentUser()
                 self.note.toJson()
                 fetch_data()
+                fetch_listbox()
 
         fetch_data()
 
@@ -724,12 +716,12 @@ class editWindow(Toplevel):
         edit_title_entry.grid(row=0, column=1, padx=10, pady=10)
         # string to entry
         value = main_listbox.get(index)      # text selection form listbox
-        setTextInput(self.todo[self.index]['title'], edit_title_entry)
+        setTextInput(self.mlistTodo[self.index]['title'], edit_title_entry)
 
         # date
         edit_date_label = Label(self, text ="Date")
         edit_date_label.grid(row=0, column=2,sticky='w')
-        select_date = self.todo[self.index]['endDate'].split("-")
+        select_date = self.mlistTodo[self.index]['endDate'].split("-")
         self.edit_cal = DateEntry(self, selectmode = 'day',
                                         year = int(select_date[0]), month = int(select_date[1]),
                                         day = int(select_date[2]))
@@ -748,7 +740,7 @@ class editWindow(Toplevel):
         edit_detail_entry = Entry(edit_frame2, textvariable=edit_detail_text)
         edit_detail_entry.grid(row=1, columnspan=4, pady=10, sticky='nswe')
         # string to entry
-        setTextInput(self.todo[self.index]['detail'], edit_detail_entry)
+        setTextInput(self.mlistTodo[self.index]['detail'], edit_detail_entry)
 
         # time
         edit_time_text= StringVar()

@@ -7,6 +7,8 @@ class Note:
         self.todoAll = []
         self.user = User()
         self.userTodo = {}
+        self.todoCompleted = []
+        self.todoIncompleted = []
 
     def createTodo(self, title, date, detail):      # create Todo
         todo = TodoList()
@@ -14,7 +16,43 @@ class Note:
         todo.setDate(date)
         todo.setDetail(detail)
         self.todoAll.append(todo.to_dict())
+        self.todoIncompleted.append(todo.to_dict())
         self.updateCurrentUser()
+    
+    def separateTodo(self):
+        self.todoIncompleted = []
+        self.todoCompleted = []
+        for todo in self.todoAll:
+            if todo['completed']:
+                self.todoCompleted.append(todo)
+            else:
+                self.todoIncompleted.append(todo)
+    
+    def findTodo(self, index, select):
+        l = []
+        if select == 'c':
+            l = self.todoCompleted
+        elif select == 'ic':
+            l = self.todoIncompleted
+        return l[index]
+    
+    def getTodoCompleted(self):
+        return self.todoCompleted
+
+    def getTodoCompletedTitle(self):
+        return [i['title'] for i in self.todoCompleted]
+
+    def getTodoIncompleted(self):
+        return self.todoIncompleted
+
+    def getTodoIncompletedTitle(self):
+        return [i['title'] for i in self.todoIncompleted]
+    
+    def setTodoCompleted(self, l):
+        self.todoCompleted = l
+    
+    def setTodoIncompleted(self, l):
+        self.todoIncompleted = l
 
     def getTodos(self):
         self.checkUser(self.user.getName())    # chack current user
@@ -26,10 +64,8 @@ class Note:
     def sortTodo(self):
         self.todoAll.sort( key=lambda a:datetime.strptime(a['endDate'], "%Y-%m-%d") )
 
-    def updateCurrentUser(self, l=[]):
-        if len(l)>0:
-            self.userTodo[self.user.getName()] = self.todoAll
-        self.userTodo[self.user.getName()] = self.todoAll
+    def updateCurrentUser(self):
+        self.userTodo[self.user.getName()] = self.todoCompleted + self.todoIncompleted
     
     def toJson(self):
         self.updateCurrentUser()
@@ -39,6 +75,8 @@ class Note:
     def loadJson(self):
         with open("data_file.json", "r") as read_file:  # convert json file to dict
             self.userTodo = json.load(read_file)
+        self.checkUser(self.user.getName())
+        self.separateTodo()
         return self.userTodo
         
     def checkUser(self, user):
@@ -47,6 +85,7 @@ class Note:
             self.todoAll = self.userTodo[user]      
         else:
             self.todoAll = []   # else create emty list
+        self.separateTodo()
         return self.todoAll
     
     def getAccout(self):
@@ -55,13 +94,13 @@ class Note:
             
 if __name__ == "__main__":
     no = Note()
-    no.createTodo("hi", "2011-1-2", "hi1")
-    no.createTodo("hi2", "2011-1-3", "hihi")
-    no.createTodo("hi2", "2011-1-14", "hihi")
-    no.createTodo("hi2", "2011-2-3", "hihi")
+    no.createTodo("cooking", "2011-1-2", "hi1")
+    no.createTodo("รดน้ำต้นไม่", "2011-1-3", "hihi")
+    no.createTodo("daily", "2011-1-14", "hihi")
+    no.createTodo("math", "2011-2-3", "hihi")
     no.checkUser("ong")
-    no.createTodo("hi2", "2011-1-3", "hellow")
-    no.createTodo("hi2", "2011-1-3", "hhhhh")
+    no.createTodo("anime", "2011-1-3", "hellow")
+    no.createTodo("serie", "2011-1-3", "hhhhh")
     no.toJson()
     a = no.loadJson()
     no.checkUser('user1')
