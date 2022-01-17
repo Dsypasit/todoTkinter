@@ -27,7 +27,7 @@ class Note:
                 self.todoCompleted.append(todo)
             else:
                 self.todoIncompleted.append(todo)
-    
+
     def findTodo(self, index, select):
         l = []
         if select == 'c':
@@ -62,6 +62,8 @@ class Note:
         pass
 
     def sortTodo(self):
+        self.todoCompleted.sort( key=lambda a:datetime.strptime(a['endDate'], "%Y-%m-%d") )
+        self.todoIncompleted.sort( key=lambda a:datetime.strptime(a['endDate'], "%Y-%m-%d") )
         self.todoAll.sort( key=lambda a:datetime.strptime(a['endDate'], "%Y-%m-%d") )
 
     def updateCurrentUser(self):
@@ -77,6 +79,7 @@ class Note:
             self.userTodo = json.load(read_file)
         self.checkUser(self.user.getName())
         self.separateTodo()
+        self.sortTodo()
         return self.userTodo
         
     def checkUser(self, user):
