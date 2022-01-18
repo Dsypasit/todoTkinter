@@ -17,193 +17,217 @@ class App:
         self.mlist = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Australia", "Brazil", "Canada", "China", "Iceland", "Israel", "United States", "Zimbabwe"]
         self.clist = []
         self.tasklist =[]
+        self.last_index = 0
+        self.last_task_index = 0
+
 
         #///////////////////////////
 
         # FUNCTIONS
         def new_account():      # window for input text
-                add_account_win = Toplevel(self.master)
-                add_account_win.title('New Account')
+            add_account_win = Toplevel(self.master)
+            add_account_win.title('New Account')
 
-                add_account_Label = Label(add_account_win,text='Account')
-                add_account_Label.grid(row=0,column=0,padx=10,pady=10)
+            add_account_Label = Label(add_account_win,text='Account')
+            add_account_Label.grid(row=0,column=0,padx=10,pady=10)
 
-                global text_new_account
-                text_new_account = StringVar()
-                add_account_entry = Entry(add_account_win,textvariable=text_new_account)
-                add_account_entry.grid(row=0,column=1,columnspan=1,padx=10,pady=10,sticky='w')
+            global text_new_account
+            text_new_account = StringVar()
+            add_account_entry = Entry(add_account_win,textvariable=text_new_account)
+            add_account_entry.grid(row=0,column=1,columnspan=1,padx=10,pady=10,sticky='w')
 
-                separator = ttk.Separator(add_account_win, orient='horizontal')
-                separator.grid(row=1,columnspan=2,sticky="ew")
+            separator = ttk.Separator(add_account_win, orient='horizontal')
+            separator.grid(row=1,columnspan=2,sticky="ew")
 
-                add_account_btn = Button(add_account_win, text="Done", command= lambda: add_account(add_account_win))
-                add_account_btn.grid(row=2,column=0,padx=10,pady=10)
-                btn_cancel = Button(add_account_win, text="Cancel", command=add_account_win.destroy)
-                btn_cancel.grid(row=2,column=1,padx=10,pady=10)
+            add_account_btn = Button(add_account_win, text="Done", command= lambda: add_account(add_account_win))
+            add_account_btn.grid(row=2,column=0,padx=10,pady=10)
+            btn_cancel = Button(add_account_win, text="Cancel", command=add_account_win.destroy)
+            btn_cancel.grid(row=2,column=1,padx=10,pady=10)
 
         def add_account(root):      # add new account in combo box
-                self.account.append(text_new_account.get())
-                #text_new_account.get()
-                combox["values"] = self.account
-                combox.current(END)
-                root.destroy()
-                refresh()
+            self.account.append(text_new_account.get())
+            #text_new_account.get()
+            combox["values"] = self.account
+            combox.current(END)
+            root.destroy()
+            refresh()
                 
         def delete_account():
-                ask = messagebox.askokcancel("Are you sure?","Are you sure to delete \"{}\" account".format(account_str.get()))
-                if ask:
-                        self.account.remove(account_str.get())
-                        combox["values"] = self.account
-                        combox.current(0)
-                        refresh()
+            ask = messagebox.askokcancel("Are you sure?","Are you sure to delete \"{}\" account".format(account_str.get()))
+            if ask:
+                self.account.remove(account_str.get())
+                combox["values"] = self.account
+                combox.current(0)
+                refresh()
 
         def changeAccount(event):
-                refresh()
-                self.mlist
-                self.clist
+            refresh()
+            self.mlist
+            self.clist
                 
         def refresh():
-                clear_all_listbox()
+            clear_all_listbox()
+            # show title 
+            detail_title_text.set('Title')
+            # show date
+            
+            # show detail
+            detail_detail_text.set('Detail')
+            # set time
+            value_time = strftime('%H:%M')
+            detail_time_text.set(value_time)  # adding time to Entry
+
+            # status len(list)
+            list_status.configure(text = str(main_listbox.size()) + " list ")
+            # status task
+            task_text.set('')       # empty entry
+            task_status.configure(text = str(task_listbox.size()) + " list ")
+
+        def clear_all_listbox():
+            main_listbox.delete(0,END)
+            complete_listbox.delete(0,END)
+            task_listbox.delete(0,END)
+
+        def delete_list():
+            main_listbox.delete(ANCHOR)
+            # update status 
+            list_status.configure(text = str(main_listbox.size()) + " list ")
+
+        def changePage():
+            # remove pointer main_listbox
+            main_listbox.select_clear(0, END)
+            
+            index = notebook_left.index(notebook_left.select())
+            if index == 0:      #'todo list page
+                # button check
+                btn_check.configure(text= 'Check')
+                    
+            elif index == 1:    #complete_list page
+                # button check
+                btn_check.configure(text= 'Uncheck')
+
+        def click_check():
+            try :   
+                index = int(task_listbox.curselection()[0])
+                # not done
+                if task_listbox.itemcget(index, "fg") == "#ffa364":
+                        task_listbox.itemconfig(
+                                task_listbox.curselection(),
+                                fg='#21130d')
+                        # get rid of selection bar
+                        task_listbox.select_clear(0, END)
+                # done
+                task_listbox.itemconfig(
+                        task_listbox.curselection(),
+                        fg='#ffa364')
+                # get rid of selection bar
+                task_listbox.select_clear(0, END)
+            except: pass
+
+        def check_list():
+            try :
+                index=notebook_left.index(notebook_left.select())
+                if index == 0:
+                        index = int(main_listbox.curselection()[0])
+                        value_title = main_listbox.get(index)      # text selection form listbox
+
+                        complete_listbox.insert(END, value_title) 
+
+                        main_listbox.delete(ANCHOR)
+                        # update status 
+                        list_status.configure(text = str(main_listbox.size()) + " list ")
+                elif index == 1:
+                        index = int(complete_listbox.curselection()[0])
+                        value_title = complete_listbox.get(index)      # text selection form listbox
+
+                        main_listbox.insert(END, value_title) 
+
+                        complete_listbox.delete(ANCHOR)
+                        # update status 
+                        list_status.configure(text = str(main_listbox.size()) + " list ")
+
+            except: pass
+
+        def show_detail_list(listbox, index_in):
+            
+            task_listbox.delete(0,END)    
+            task_text.set('')       # clear entry add task
+            
+            if len(listbox.curselection()):
+                self.last_index = int(listbox.curselection()[0])
+
+
+            if listbox == complete_listbox:
+                if index_in == None:
+                        index = int(listbox.curselection()[0])
+                else:
+                        index = index_in
+
+                value_title = listbox.get(index)      # text selection form listbox
+
+                task_listbox.bind('<<ListboxSelect>>', 
+                        lambda e: click_check()) #Select click
+
+                # enable btn_addtask & btn_del
+                detail_btn_add.configure(state= DISABLED)
+                detail_btn_del.configure(state= DISABLED)
+
+                value_title = listbox.get(index)      # text selection form listbox
+
                 # show title 
-                detail_title_text.set('Title')
+                detail_title_text.set(value_title)
                 # show date
-                
+                detail_date_text.set('date')
                 # show detail
-                detail_detail_text.set('Detail')
+                value_detail = ''
+                detail_detail_text.set(value_detail)
                 # set time
                 value_time = strftime('%H:%M')
                 detail_time_text.set(value_time)  # adding time to Entry
 
-                # status len(list)
-                list_status.configure(text = str(main_listbox.size()) + " list ")
-                # status task
-                task_text.set('')       # empty entry
+                # status 
                 task_status.configure(text = str(task_listbox.size()) + " list ")
+                    
+            elif listbox == main_listbox:
+                if index_in == None:
+                        index = int(listbox.curselection()[0])
+                else:
+                        index = index_in
 
-        def clear_all_listbox():
-                main_listbox.delete(0,END)
-                complete_listbox.delete(0,END)
-                task_listbox.delete(0,END)
+                value_title = listbox.get(index)      # text selection form listbox
 
-        def delete_list():
-                main_listbox.delete(ANCHOR)
-                # update status 
-                list_status.configure(text = str(main_listbox.size()) + " list ")
+                task_listbox.bind('<<ListboxSelect>>', 
+                        lambda e: click_check()) #Select click
 
-        def changePage():
-                index = notebook_left.index(notebook_left.select())
-                if index == 0:      #'todo list page
-                        # button check
-                        btn_check.configure(text= 'Check')
-                        
-                elif index == 1:    #complete_list page
-                        # button check
-                        btn_check.configure(text= 'Uncheck')
+                # enable btn_addtask & btn_del 
+                detail_btn_add.configure(state=NORMAL)
+                detail_btn_del.configure(state=NORMAL)
 
-        def click_check():
-                try :   
-                        index = int(task_listbox.curselection()[0])
-                        # not done
-                        if task_listbox.itemcget(index, "fg") == "#ffa364":
-                                task_listbox.itemconfig(
-                                        task_listbox.curselection(),
-                                        fg='#21130d')
-                                # get rid of selection bar
-                                task_listbox.select_clear(0, END)
-                        # done
-                        task_listbox.itemconfig(
-                                task_listbox.curselection(),
-                                fg='#ffa364')
-                        # get rid of selection bar
-                        task_listbox.select_clear(0, END)
-                except: pass
+                # show title 
+                detail_title_text.set(value_title)
+                # show date
+                detail_date_text.set('date') 
+                # show detail
+                value_detail = ''
+                detail_detail_text.set(value_detail)
+                # set time
+                value_time = strftime('%H:%M')
+                detail_time_text.set(value_time)  # adding time to Entry
 
-        def check_list():
-                try :
-                        index=notebook_left.index(notebook_left.select())
-                        if index == 0:
-                                index = int(main_listbox.curselection()[0])
-                                value_title = main_listbox.get(index)      # text selection form listbox
+                # task status 
+                task_status.configure(text = str(task_listbox.size()) + " list ")
+    
 
-                                complete_listbox.insert(END, value_title) 
-
-                                main_listbox.delete(ANCHOR)
-                                # update status 
-                                list_status.configure(text = str(main_listbox.size()) + " list ")
-                        elif index == 1:
-                                index = int(complete_listbox.curselection()[0])
-                                value_title = complete_listbox.get(index)      # text selection form listbox
-
-                                main_listbox.insert(END, value_title) 
-
-                                complete_listbox.delete(ANCHOR)
-                                # update status 
-                                list_status.configure(text = str(main_listbox.size()) + " list ")
-
-                except: pass
-
-        def show_detail_list(listbox, event):
-                try : 
-                        task_listbox.delete(0,END)    
-                        task_text.set('')       # clear entry add task
-                        w = event.widget
-                        index = int(w.curselection()[0])
-                        print(index)
-
-                        if listbox == complete_listbox:
-                                # enable btn_addtask & btn_del
-                                detail_btn_add.configure(state= DISABLED)
-                                detail_btn_del.configure(state= DISABLED)
-
-                                value_title = listbox.get(index)      # text selection form listbox
-
-                                # show title 
-                                detail_title_text.set(value_title)
-                                # show date
-                                detail_date_text.set('date')
-                                # show detail
-                                value_detail = ''
-                                detail_detail_text.set(value_detail)
-                                # set time
-                                value_time = strftime('%H:%M')
-                                detail_time_text.set(value_time)  # adding time to Entry
-
-                                # status 
-                                task_status.configure(text = str(task_listbox.size()) + " list ")
-                                
-                        elif listbox == main_listbox:
-                                # enable btn_addtask & btn_del 
-                                detail_btn_add.configure(state='normal',commamd = click_check)
-                                detail_btn_del.configure(state='normal',commamd = click_check)
-
-                                index = int(listbox.curselection()[0])
-                                value_title = listbox.get(index)      # text selection form listbox
-
-                                # show title 
-                                detail_title_text.set(value_title)
-                                # show date
-                                detail_date_text.set('date') 
-                                # show detail
-                                value_detail = ''
-                                detail_detail_text.set(value_detail)
-                                # set time
-                                value_time = strftime('%H:%M')
-                                detail_time_text.set(value_time)  # adding time to Entry
-
-                                # task status 
-                                task_status.configure(text = str(task_listbox.size()) + " list ")
-
-                except: pass
 
 
         def del_all():
                 ask = messagebox.askokcancel("Are you sure?","Are you sure to delete all list")
                 if ask:
-                        clear_all_listbox() 
-                        # list status
-                        list_status.configure(text = str(main_listbox.size()) + " list ")
-                         # task status 
-                        task_status.configure(text = str(task_listbox.size()) + " list ")
+                    clear_all_listbox() 
+                    # list status
+                    list_status.configure(text = str(main_listbox.size()) + " list ")
+                        # task status 
+                    task_status.configure(text = str(task_listbox.size()) + " list ")
 
 
         def add_task():
@@ -328,7 +352,8 @@ class App:
         main_listbox.configure(yscrollcommand=scrollbar.set)
         scrollbar.configure(command=main_listbox.yview)
         main_listbox.bind('<<ListboxSelect>>', 
-                lambda e: show_detail_list(main_listbox, e)) #Select click
+                lambda e: show_detail_list(main_listbox,
+                            int(main_listbox.curselection()[0]))) #Select click
         main_listbox.bind('<Double-1>', 
                 lambda e: editWindow(self.master)) #double click
 
@@ -365,7 +390,8 @@ class App:
         complete_listbox.configure(yscrollcommand=scrollbar.set)
         scrollbar.configure(command=complete_listbox.yview)
         complete_listbox.bind('<<ListboxSelect>>', 
-                lambda e: show_detail_list(complete_listbox, e)) #Select click
+                lambda e: show_detail_list(complete_listbox,
+                            int(complete_listbox.curselection()[0]))) #Select click
         
         separator = ttk.Separator(CompeletList_frame, orient='horizontal')
         separator.grid(sticky="ew")
@@ -497,7 +523,7 @@ class App:
         detail_entry.grid(row=0,column=3,columnspan=3, pady=10, sticky='nswe')
 
         # button add
-        detail_btn_add = Button(detail_frame3,text ="+",state= DISABLED)
+        detail_btn_add = Button(detail_frame3,text ="+", command= lambda e: click_check,state= DISABLED)
         detail_btn_add.grid(row=0, column=6, sticky='e')
         detail_btn_add.bind("<Button>",lambda e: add_task())
 
