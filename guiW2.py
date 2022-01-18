@@ -102,8 +102,6 @@ class App:
                 self.note.checkUser(account_str.get())
                 fetch_data()
                 fetch_listbox()
-                self.note.graph()
-                changePageRight()
                 
         def refresh():
             clear_all_listbox()
@@ -164,10 +162,11 @@ class App:
         
         def changePageRight():
             index = notebook_right.index(notebook_right.select())
-
             if index == 0:
                 return
-            showGraph()
+            else:
+                self.note.graph()
+                showGraph()
                 
 
         def click_check():
@@ -216,8 +215,8 @@ class App:
                 refresh()
                 update_json()
                 fetch_listbox()
-                self.note.graph()
-                changePageRight()
+                # self.note.graph()
+                # changePageRight()
                         # update status 
                 list_status.configure(text = str(main_listbox.size()) + " list ")
                 list_status.configure(text = str(complete_listbox.size()) + " list ")
@@ -347,7 +346,6 @@ class App:
 
         def export_data():
             file = filedialog.asksaveasfilename(filetypes=[('Json file', '*.json')]) + '.json'
-            print(file)
             if file:
                 self.note.export_file(file)
         #///////////////////////////
@@ -654,7 +652,6 @@ class App:
         detail_btn_add.bind("<Button>",lambda e: add_task())
         
         fetch_data()
-        self.note.graph()
         fetch_listbox()
         #///////////////////////////
 

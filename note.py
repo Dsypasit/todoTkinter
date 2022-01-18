@@ -115,6 +115,7 @@ class NoteManager:
         c, i = len(self.getTodoCompleted()), len(self.getTodoIncompleted())
         y = [c, i]
         label = ['completed', 'incompleted']
+        print(y)
         plt.title('Amount todo of '+ name)
         plt.pie(y, labels=label, autopct=lambda x:f"{x:.2f} %")
         plt.savefig(f'pie_{name}.png', dpi=200)
@@ -161,9 +162,12 @@ class NoteManager:
         plt.close()
 
     def graph(self):
-        self.graph_pie()
-        self.graph_complete()
-        self.graph_incomplete()
+        try:
+            self.graph_pie()
+            self.graph_complete()
+            self.graph_incomplete()
+        except:
+            pass
     
     def get_pie(self):
         name = self.user.getName()
