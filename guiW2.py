@@ -1,8 +1,11 @@
+from tkinter.font import Font
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from tkinter.font import Font
+from note import NoteManager
 from tkcalendar import DateEntry # pip install tkcalendar
+from datetime import datetime, date
 from time import strftime
 
 # Creating App class which will contain
@@ -10,60 +13,94 @@ class App:
     def __init__(self, master) -> None:
         # Instantiating master i.e toplevel Widget
         self.master = master
+        self.note = NoteManager()
+        self.mlist = []
+        self.clist = []
+        self.todo = []
+        self.tasklist =[]
+        self.account = []
+        self.last_index = 0
+        self.last_task_index = 0
+        self.check_com = False
+        self.master = master
         # Setting the title of the window
         self.master.title('TODODO')
 
-        self.account = ["Guest", "user1", "user2"]
-        self.mlist = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Australia", "Brazil", "Canada", "China", "Iceland", "Israel", "United States", "Zimbabwe"]
-        self.clist = []
-        self.tasklist =[]
-        self.last_index = 0
-        self.last_task_index = 0
+        # self.account = ["Guest", "user1", "user2"]
+        # self.mlist = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Australia", "Brazil", "Canada", "China", "Iceland", "Israel", "United States", "Zimbabwe"]
 
+        def fetch_listbox():
+                mlist = self.note.getTodoIncompleted()
+                clist = self.note.getTodoCompleted()
+                main_listbox.delete(0, END)
+                complete_listbox.delete(0, END)
+                for item in mlist:
+                        main_listbox.insert(END, item['title'])
+                for item in clist:
+                        complete_listbox.insert(END, item['title'])
+
+        def fetch_data():
+                self.note.loadJson(account_str.get())
+                self.note.checkUser(account_str.get())
+                self.todo = self.note.getTodos()
+                self.mlist = self.note.getTodoCompletedTitle()
+                self.clist = self.note.getTodoIncompletedTitle()
+                self.account = self.note.getAccout()
+
+        def update_json():
+                self.note.updateCurrentUser()
+                self.note.toJson()
+                fetch_data()
 
         #///////////////////////////
 
         # FUNCTIONS
         def new_account():      # window for input text
-            add_account_win = Toplevel(self.master)
-            add_account_win.title('New Account')
+                add_account_win = Toplevel(self.master)
+                add_account_win.title('New Account')
 
-            add_account_Label = Label(add_account_win,text='Account')
-            add_account_Label.grid(row=0,column=0,padx=10,pady=10)
+                add_account_Label = Label(add_account_win,text='Account')
+                add_account_Label.grid(row=0,column=0,padx=10,pady=10)
 
-            global text_new_account
-            text_new_account = StringVar()
-            add_account_entry = Entry(add_account_win,textvariable=text_new_account)
-            add_account_entry.grid(row=0,column=1,columnspan=1,padx=10,pady=10,sticky='w')
+                global text_new_account
+                text_new_account = StringVar()
+                add_account_entry = Entry(add_account_win,textvariable=text_new_account)
+                add_account_entry.grid(row=0,column=1,columnspan=1,padx=10,pady=10,sticky='w')
 
-            separator = ttk.Separator(add_account_win, orient='horizontal')
-            separator.grid(row=1,columnspan=2,sticky="ew")
+                separator = ttk.Separator(add_account_win, orient='horizontal')
+                separator.grid(row=1,columnspan=2,sticky="ew")
 
-            add_account_btn = Button(add_account_win, text="Done", command= lambda: add_account(add_account_win))
-            add_account_btn.grid(row=2,column=0,padx=10,pady=10)
-            btn_cancel = Button(add_account_win, text="Cancel", command=add_account_win.destroy)
-            btn_cancel.grid(row=2,column=1,padx=10,pady=10)
+                add_account_btn = Button(add_account_win, text="Done", command= lambda: add_account(add_account_win))
+                add_account_btn.grid(row=2,column=0,padx=10,pady=10)
+                btn_cancel = Button(add_account_win, text="Cancel", command=add_account_win.destroy)
+                btn_cancel.grid(row=2,column=1,padx=10,pady=10)
 
         def add_account(root):      # add new account in combo box
-            self.account.append(text_new_account.get())
+                self.account.append(text_new_account.get())
+                self.note.checkUser(text_new_account.get())
+                update_json()
             #text_new_account.get()
-            combox["values"] = self.account
-            combox.current(END)
-            root.destroy()
-            refresh()
+                combox["values"] = self.account
+                combox.current(END)
+                root.destroy()
+                refresh()
                 
         def delete_account():
             ask = messagebox.askokcancel("Are you sure?","Are you sure to delete \"{}\" account".format(account_str.get()))
             if ask:
+                self.note.delete_user(account_str.get())
                 self.account.remove(account_str.get())
                 combox["values"] = self.account
                 combox.current(0)
                 refresh()
+                fetch_data()
+                fetch_listbox()
 
         def changeAccount(event):
-            refresh()
-            self.mlist
-            self.clist
+                refresh()
+                self.note.checkUser(account_str.get())
+                fetch_data()
+                fetch_listbox()
                 
         def refresh():
             clear_all_listbox()
@@ -89,7 +126,9 @@ class App:
             task_listbox.delete(0,END)
 
         def delete_list():
+            self.note.todoIncompleted.pop(int(main_listbox.curselection()[0]))
             main_listbox.delete(ANCHOR)
+            update_json()
             # update status 
             list_status.configure(text = str(main_listbox.size()) + " list ")
 
@@ -108,7 +147,9 @@ class App:
 
         def click_check():
             try :   
-                index = int(task_listbox.curselection()[0])
+                if len(task_listbox.curselection()) > 0:
+                        self.last_task_index = int(task_listbox.curselection()[0])
+                index = self.last_task_index
                 # not done
                 if task_listbox.itemcget(index, "fg") == "#ffa364":
                         task_listbox.itemconfig(
@@ -116,48 +157,94 @@ class App:
                                 fg='#21130d')
                         # get rid of selection bar
                         task_listbox.select_clear(0, END)
+                        if self.check_com:
+                                self.note.todoCompleted[self.last_index]['task'][self.last_task_index]['completed'] = False
+                        else:
+                                self.note.todoIncompleted[self.last_index]['task'][self.last_task_index]['completed'] = False
+                        update_json()
+                        return
                 # done
                 task_listbox.itemconfig(
                         task_listbox.curselection(),
                         fg='#ffa364')
+                if self.check_com:
+                        self.note.todoCompleted[self.last_index]['task'][self.last_task_index]['completed'] = True
+                else:
+                        self.note.todoIncompleted[self.last_index]['task'][self.last_task_index]['completed'] = True
+                update_json()
                 # get rid of selection bar
                 task_listbox.select_clear(0, END)
             except: pass
 
         def check_list():
-            try :
+            # try :
                 index=notebook_left.index(notebook_left.select())
-                if index == 0:
-                        index = int(main_listbox.curselection()[0])
-                        value_title = main_listbox.get(index)      # text selection form listbox
-
-                        complete_listbox.insert(END, value_title) 
-
-                        main_listbox.delete(ANCHOR)
+                today = date.today().strftime("%Y-%m-%d")
+                print('hello')
+                if index == 1:
+                        self.note.todoCompleted[self.last_index]['completed'] = False
+                        self.note.todoCompleted[self.last_index]['dateCompleted'] = None
                         # update status 
-                        list_status.configure(text = str(main_listbox.size()) + " list ")
-                elif index == 1:
-                        index = int(complete_listbox.curselection()[0])
-                        value_title = complete_listbox.get(index)      # text selection form listbox
-
-                        main_listbox.insert(END, value_title) 
-
-                        complete_listbox.delete(ANCHOR)
+                elif index == 0:
+                        self.note.todoIncompleted[self.last_index]['completed'] = True
+                        self.note.todoIncompleted[self.last_index]['dateCompleted'] = today
+                refresh()
+                update_json()
+                fetch_listbox()
                         # update status 
-                        list_status.configure(text = str(main_listbox.size()) + " list ")
+                list_status.configure(text = str(main_listbox.size()) + " list ")
+                list_status.configure(text = str(complete_listbox.size()) + " list ")
 
-            except: pass
+            # except: pass
 
         def show_detail_list(listbox, index_in):
-            
+            fetch_data()
             task_listbox.delete(0,END)    
             task_text.set('')       # clear entry add task
-            
+         
             if len(listbox.curselection()):
                 self.last_index = int(listbox.curselection()[0])
 
 
             if listbox == complete_listbox:
+                self.check_com = True
+                if index_in == None:
+                        index = int(listbox.curselection()[0])
+                else:
+                        index = index_in
+
+                task_listbox.bind('<<ListboxSelect>>', 
+                        lambda e: click_check()) #Select click
+
+                # enable btn_addtask & btn_del
+                detail_btn_add.configure(state= DISABLED)
+                detail_btn_del.configure(state= DISABLED)
+
+                value = self.note.todoCompleted[index] 
+                value_title = listbox.get(index)      # text selection form listbox
+
+                # show title 
+                detail_title_text.set(value_title)
+                # show date
+                selection_date = datetime.strptime(value['endDate'], '%Y-%m-%d')
+                detail_date_text.set(selection_date.strftime('%d/%m/%Y'))
+                # show detail
+                value_detail = value['detail']
+                detail_detail_text.set(value_detail)
+                # set time
+                value_time = strftime('%H:%M')
+                detail_time_text.set(value['timeEnd'])  # adding time to Entry
+
+                # status 
+                task_status.configure(text = str(task_listbox.size()) + " list ")
+                for n, i in enumerate(value['task']):
+                    task_listbox.insert(END, u'\u2022 '+i['title'])
+                    task_listbox.itemconfig(
+                        n,
+                        fg='#ffa364' if i['completed'] else '#21130d')
+                    
+            elif listbox == main_listbox:
+                self.check_com = False
                 if index_in == None:
                         index = int(listbox.curselection()[0])
                 else:
@@ -172,49 +259,26 @@ class App:
                 detail_btn_add.configure(state= DISABLED)
                 detail_btn_del.configure(state= DISABLED)
 
+                value = self.note.todoIncompleted[index] 
                 value_title = listbox.get(index)      # text selection form listbox
 
                 # show title 
                 detail_title_text.set(value_title)
                 # show date
-                detail_date_text.set('date')
+                selection_date = datetime.strptime(value['endDate'], '%Y-%m-%d')
+                detail_date_text.set(selection_date.strftime('%d/%m/%Y'))
                 # show detail
-                value_detail = ''
+                value_detail = value['detail']
                 detail_detail_text.set(value_detail)
                 # set time
                 value_time = strftime('%H:%M')
-                detail_time_text.set(value_time)  # adding time to Entry
-
-                # status 
-                task_status.configure(text = str(task_listbox.size()) + " list ")
-                    
-            elif listbox == main_listbox:
-                if index_in == None:
-                        index = int(listbox.curselection()[0])
-                else:
-                        index = index_in
-
-                value_title = listbox.get(index)      # text selection form listbox
-
-                task_listbox.bind('<<ListboxSelect>>', 
-                        lambda e: click_check()) #Select click
-
-                # enable btn_addtask & btn_del 
-                detail_btn_add.configure(state=NORMAL)
-                detail_btn_del.configure(state=NORMAL)
-
-                # show title 
-                detail_title_text.set(value_title)
-                # show date
-                detail_date_text.set('date') 
-                # show detail
-                value_detail = ''
-                detail_detail_text.set(value_detail)
-                # set time
-                value_time = strftime('%H:%M')
-                detail_time_text.set(value_time)  # adding time to Entry
-
+                detail_time_text.set(value['timeEnd'])  # adding time to Entry
                 # task status 
+                for n, i in enumerate(value['task']):
+                    task_listbox.insert(END, u'\u2022 '+i['title'])
+                    task_listbox.itemconfig(
+                            n,
+                            fg='#ffa364' if i['completed'] else '#21130d')
                 task_status.configure(text = str(task_listbox.size()) + " list ")
     
 
@@ -223,6 +287,9 @@ class App:
         def del_all():
                 ask = messagebox.askokcancel("Are you sure?","Are you sure to delete all list")
                 if ask:
+                    self.note.todoCompleted = []
+                    self.note.todoIncompleted = []
+                    update_json()
                     clear_all_listbox() 
                     # list status
                     list_status.configure(text = str(main_listbox.size()) + " list ")
@@ -233,8 +300,10 @@ class App:
         def add_task():
                 # remove pointer main_listbox
                 main_listbox.select_clear(0, END)
-
-                task_listbox.insert(END, task_text.get())
+                task_listbox.insert(END, u'\u2022 '+task_text.get())
+                self.note.todoIncompleted[self.last_index]['task'].append({'title': task_text.get(), 'completed': False})
+                update_json()
+                task_text.set('')
                 task_text.set('')
                 # task status 
                 task_status.configure(text = str(task_listbox.size()) + " list ")
@@ -242,6 +311,8 @@ class App:
 
 
         #///////////////////////////
+        self.note.loadJson()
+        self.account = self.note.getAccout()
 
         # define list font
         list_font = Font(
@@ -355,7 +426,7 @@ class App:
                 lambda e: show_detail_list(main_listbox,
                             int(main_listbox.curselection()[0]))) #Select click
         main_listbox.bind('<Double-1>', 
-                lambda e: editWindow(self.master)) #double click
+                lambda e: editWindow(self.master, e, show_detail_list, main_listbox, name=account_str.get())) #double click
 
         separator = ttk.Separator(ToDoList_frame, orient='horizontal')
         separator.grid(sticky="ew")
@@ -411,7 +482,7 @@ class App:
         # button add
         btn_add = Button(main_frame2,text ="+")
         btn_add.bind("<Button>",
-                lambda e: addWindow(self.master))
+                lambda e: addWindow(self.master, account_str.get()))
         btn_add.grid(row=0, column=1)
 
         # status list
@@ -527,6 +598,7 @@ class App:
         detail_btn_add.grid(row=0, column=6, sticky='e')
         detail_btn_add.bind("<Button>",lambda e: add_task())
 
+        fetch_listbox()
         #///////////////////////////
 
         
@@ -538,23 +610,66 @@ class App:
 
 class addWindow(Toplevel):
      
-    def __init__(self, master = None):
+    def __init__(self, master = None, name=None):
         # set self => master 
         super().__init__(master = master)
         self.title("Add List")
 
+        # def add_list():
+        #         # string form entry
+        #         str_title = add_list_title_text.get()   # data title
+        #         str_detail = add_list_detail_text.get() # data detail
+        #         str_date = add_list_date_text           # data date
+
+        #         main_listbox.insert(END, str_title) 
+
+        #         # list status
+        #         list_status.configure(text = str(main_listbox.size()) + " list ")
+
+        #         self.destroy()
+        self.note = NoteManager()
+        self.mlist = []
+        self.clist = []
+        self.todo = []
+        self.tasklist =[]
+        self.name = name
+
+
         def add_list():
                 # string form entry
-                str_title = add_list_title_text.get()   # data title
-                str_detail = add_list_detail_text.get() # data detail
-                str_date = add_list_date_text           # data date
-
-                main_listbox.insert(END, str_title) 
-
-                # list status
+                str_title = add_list_title_text.get()
+                str_detail = add_list_detail_text.get()
+                str_date = add_list_cal.get_date().strftime("%Y-%m-%d")
+                str_time = add_list_time_text.get()
+                self.note.createTodo(str_title, str_date, str_detail, str_time)
                 list_status.configure(text = str(main_listbox.size()) + " list ")
-
+                update_json()
+                print(self.note.user.getName())
                 self.destroy()
+
+        def fetch_listbox():
+                mlist = self.note.getTodoIncompletedTitle()
+                clist = self.note.getTodoCompletedTitle()
+                main_listbox.delete(0, END)
+                complete_listbox.delete(0, END)
+                for item in mlist:
+                        main_listbox.insert(END, item)
+                for item in clist:
+                        complete_listbox.insert(END, item)
+
+        def fetch_data():
+                self.note.loadJson()
+                self.note.checkUser(self.name)
+                self.todo = self.note.getTodos()
+                self.account = self.note.getAccout()
+        
+        def update_json():
+                self.note.updateCurrentUser()
+                self.note.toJson()
+                fetch_data()
+                fetch_listbox()
+
+        fetch_data()
                 
 
         # title
@@ -614,10 +729,20 @@ class addWindow(Toplevel):
 
 class editWindow(Toplevel):
      
-    def __init__(self, master = None):
+    def __init__(self, master, e=None, update_func=None, listbox=None, name=None):
         # set self => master 
         super().__init__(master = master)
         self.title("Update List")
+        self.name = name
+        self.note = NoteManager()
+        self.todo = {}
+        self.clist = []
+        self.mlistTodo = []
+        self.mlist = []
+        self.update_func = update_func
+        self.index = int(e.widget.curselection()[0])
+        self.listbox = listbox
+        # index of selection
 
         # index of selection
         index = int(main_listbox.curselection()[0])
@@ -634,12 +759,47 @@ class editWindow(Toplevel):
                 # string form entry
                 str_title = edit_title_text.get()   # data title
                 str_detail = edit_detail_text.get() # data detail
-                str_date = edit_date_text           # data date
+                str_date = edit_cal.get_date().strftime("%Y-%m-%d")           # data date
+                str_time = edit_time_text.get()
+
+                todo = self.note.getTodoIncompleted()
+                todo[self.index]['title'] = str_title
+                todo[self.index]['endDate'] = str_date
+                todo[self.index]['detail'] = str_detail
+                todo[self.index]['timeEnd'] = str_time
+                update_json()
+                self.update_func(listbox, index)
+                self.destroy()
   
                 # update_listbox
-                update_listbox(index, str_title)
 
                 self.destroy()
+        
+        def fetch_listbox():
+            mlist = self.note.getTodoIncompletedTitle()
+            clist = self.note.getTodoCompletedTitle()
+            main_listbox.delete(0, END)
+            complete_listbox.delete(0, END)
+            for item in mlist:
+                    main_listbox.insert(END, item)
+            for item in clist:
+                    complete_listbox.insert(END, item)
+
+        def fetch_data():
+            self.note.loadJson()
+            self.note.sortTodo()
+            self.note.checkUser(self.name)
+            self.todo = self.note.getTodos()
+            self.mlistTodo = self.note.getTodoIncompleted()
+            self.account = self.note.getAccout()
+
+        def update_json():
+            self.note.updateCurrentUser()
+            self.note.toJson()
+            fetch_data()
+            fetch_listbox()
+
+        fetch_data()
 
         # title
         edit_title_text = StringVar()
@@ -649,16 +809,15 @@ class editWindow(Toplevel):
         edit_title_entry.grid(row=0, column=1, padx=10, pady=10)
         # string to entry
         value = main_listbox.get(index)      # text selection form listbox
-        setTextInput(value, edit_title_entry)
+        setTextInput(self.mlistTodo[self.index]['title'], edit_title_entry)
 
         # date
         edit_date_label = Label(self, text ="Date")
         edit_date_label.grid(row=0, column=2,sticky='w')
-        edit_cal = DateEntry(self, selectmode = 'day',
-                        year = 2020, month = 5,
-                        day = 22)
+        edit_cal = DateEntry(self, locale='en_US') 
+        select_date = self.mlistTodo[self.index]['endDate']
+        edit_cal.set_date(datetime.strptime(select_date, "%Y-%m-%d"))
         edit_cal.grid(row=0, column=3, padx=10, sticky='w') 
-        edit_date_text = edit_cal.get_date()
 
         #///////////////////////////
         
@@ -676,6 +835,7 @@ class editWindow(Toplevel):
         edit_detail_entry.grid(row=1, columnspan=4, pady=10, sticky='nswe')
         # string to entry
         #setTextInput(value, detail_entry)
+        setTextInput(self.mlistTodo[self.index]['detail'], edit_detail_entry)
 
         # time
         edit_time_text= StringVar()
@@ -685,7 +845,7 @@ class editWindow(Toplevel):
         edit_time_entry.grid(row=0,column=2) 
         # set time
         edit_time_string = strftime('%H:%M')
-        edit_time_text.set(edit_time_string)  # adding time to Entry
+        edit_time_text.set(self.mlistTodo[self.index]['timeEnd'])  # adding time to Entry
 
         #///////////////////////////
 

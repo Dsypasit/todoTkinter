@@ -49,9 +49,9 @@ class NoteManager:
         return self.todoAll
 
     def sortTodo(self):
-        self.todoCompleted.sort( key=lambda a:(datetime.strptime(a['endDate'], "%Y-%m-%d"), datetime.strptime(a['timeEnd'], "%H:%M:%S")) )
-        self.todoIncompleted.sort( key=lambda a:(datetime.strptime(a['endDate'], "%Y-%m-%d"), datetime.strptime(a['timeEnd'], "%H:%M:%S")))
-        self.todoAll.sort( key=lambda a:(datetime.strptime(a['endDate'], "%Y-%m-%d"), datetime.strptime(a['timeEnd'], "%H:%M:%S")))
+        self.todoCompleted.sort( key=lambda a:(datetime.strptime(a['endDate'], "%Y-%m-%d"), datetime.strptime(a['timeEnd'], "%H:%M")) )
+        self.todoIncompleted.sort( key=lambda a:(datetime.strptime(a['endDate'], "%Y-%m-%d"), datetime.strptime(a['timeEnd'], "%H:%M")))
+        self.todoAll.sort( key=lambda a:(datetime.strptime(a['endDate'], "%Y-%m-%d"), datetime.strptime(a['timeEnd'], "%H:%M")))
 
     def updateCurrentUser(self):
         self.userTodo[self.user.getName()] = self.todoCompleted + self.todoIncompleted
@@ -104,13 +104,13 @@ class NoteManager:
             
 if __name__ == "__main__":
     no = NoteManager()
-    no.createTodo("cooking", "2011-1-2", "hi1", strftime("13:%M:%S"))
-    no.createTodo("รดน้ำต้นไม่", "2011-1-3", "hihi", strftime("15:%M:%S"))
-    no.createTodo("daily", "2011-1-14", "hihi", strftime("%H:%M:%S"))
-    no.createTodo("math", "2011-2-3", "hihi", strftime("%H:%M:%S"))
+    no.createTodo("cooking", "2011-1-2", "hi1", strftime("13:%M"))
+    no.createTodo("รดน้ำต้นไม่", "2011-1-3", "hihi", strftime("15:%M"))
+    no.createTodo("daily", "2011-1-14", "hihi", strftime("%H:%M"))
+    no.createTodo("math", "2011-2-3", "hihi", strftime("%H:%M"))
     no.checkUser("ong")
-    no.createTodo("anime", "2011-1-3", "hellow", strftime("%H:%M:%S"))
-    no.createTodo("serie", "2011-1-3", "hhhhh", strftime("%H:%M:%S"))
+    no.createTodo("anime", "2011-1-3", "hellow", strftime("%H:%M"))
+    no.createTodo("serie", "2011-1-3", "hhhhh", strftime("%H:%M"))
     no.toJson()
     a = no.loadJson()
     no.checkUser('user1')

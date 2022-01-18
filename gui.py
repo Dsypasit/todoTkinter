@@ -321,9 +321,7 @@ class App:
                         clistbox.delete(0,END)  
 
         def addtask():
-                global main_listbox
                 task_listbox.insert(END, u'\u2022 '+task_text.get())
-                print(main_listbox.curselection())
                 self.note.todoIncompleted[self.last_index]['task'].append({'title': task_text.get(), 'completed': False})
                 update_json()
                 task_text.set('')
