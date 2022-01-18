@@ -3,6 +3,10 @@ from user import User
 import json
 from datetime import datetime
 from time import strftime
+from PIL import Image, ImageTk
+import matplotlib.pyplot as plt
+import numpy as np
+
 class NoteManager:
     def __init__(self):
         self.todoAll = []
@@ -11,6 +15,7 @@ class NoteManager:
         self.todoCompleted = []
         self.todoIncompleted = []
         self.filename = "data_file.json"
+        self.size = (500, 400)
 
     def createTodo(self, title, date, detail, time):      # create Todo
         todo = TodoList()
@@ -99,6 +104,73 @@ class NoteManager:
     def export_file(self, path):
         self.filename = path
         self.toJson()
+
+    def graph_pie(self):
+        name = self.user.getName()
+        c, i = len(self.getTodoCompleted()), len(self.getTodoIncompleted())
+        y = [c, i]
+        label = ['completed', 'incompleted']
+        plt.title('Amount todo of '+ name)
+        plt.pie(y, labels=label, autopct=lambda x:f"{x:.2f} %")
+        plt.savefig(f'pie_{name}.png', dpi=200)
+        plt.close()
+
+    def graph_complete(self):
+        name = self.user.getName()
+        l = self.getTodoCompleted()
+        result = {}
+        for i in l:
+            date = i['dateCompleted']
+            if date in result:
+                result[date] += 1
+            else:
+                result[date] = 1
+        k = list(result.keys())
+        k = sorted(k, key=lambda a: datetime.strptime(a, "%Y-%m-%d"))
+        v = [result[i] for i in k]
+        plt.title('Amout complete of '+ name)
+        plt.ylim(0, 10)
+        plt.yticks(np.arange(0, 10, 1))
+        plt.plot(k, v, 'bo', k, v, 'k--')
+        plt.savefig(f'plot_completed_{name}.png', dpi=200)
+        plt.close()
+
+    def graph_incomplete(self):
+        name = self.user.getName()
+        l = self.getTodoIncompleted()
+        result = {}
+        for i in l:
+            date = i['endDate']
+            if date in result:
+                result[date] += 1
+            else:
+                result[date] = 1
+        k = list(result.keys())
+        k = sorted(k, key=lambda a: datetime.strptime(a, "%Y-%m-%d"))
+        v = [result[i] for i in k]
+        plt.title('Amout incomplete of '+ name)
+        plt.ylim(0, 10)
+        plt.yticks(np.arange(0, 10, 1))
+        plt.plot(k, v, 'ro', k, v, 'k--')
+        plt.savefig(f'plot_incompleted_{name}.png', dpi=200)
+        plt.close()
+
+    def graph(self):
+        self.graph_pie()
+        self.graph_complete()
+        self.graph_incomplete()
+    
+    def get_pie(self):
+        name = self.user.getName()
+        return ImageTk.PhotoImage(Image.open(f"pie_{name}.png").resize(self.size))
+
+    def get_completed(self):
+        name = self.user.getName()
+        return ImageTk.PhotoImage(Image.open(f"plot_completed_{name}.png").resize(self.size))
+
+    def get_incompleted(self):
+        name = self.user.getName()
+        return ImageTk.PhotoImage(Image.open(f"plot_incompleted_{name}.png").resize(self.size))
 
 
             

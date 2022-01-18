@@ -101,6 +101,8 @@ class App:
                 self.note.checkUser(account_str.get())
                 fetch_data()
                 fetch_listbox()
+                self.note.graph()
+                changePageRight()
                 
         def refresh():
             clear_all_listbox()
@@ -144,6 +146,28 @@ class App:
             elif index == 1:    #complete_list page
                 # button check
                 btn_check.configure(text= 'Uncheck')
+        
+        def showGraph():
+            img = None            
+            # self.note.graph()
+            if self.graph_list.index(select_graph.get()) == 0:
+                img = self.note.get_pie()
+            elif self.graph_list.index(select_graph.get()) == 1:
+                img = self.note.get_completed()
+            if self.graph_list.index(select_graph.get()) == 2:
+                img = self.note.get_incompleted()
+
+            graph_image.configure(image=img)
+            graph_image.photo = img
+
+        
+        def changePageRight():
+            index = notebook_right.index(notebook_right.select())
+
+            if index == 0:
+                return
+            showGraph()
+                
 
         def click_check():
             try :   
@@ -191,6 +215,8 @@ class App:
                 refresh()
                 update_json()
                 fetch_listbox()
+                self.note.graph()
+                changePageRight()
                         # update status 
                 list_status.configure(text = str(main_listbox.size()) + " list ")
                 list_status.configure(text = str(complete_listbox.size()) + " list ")
@@ -396,6 +422,21 @@ class App:
 
         notebook_right.add(notebook_right_page1, text='Detail')
         notebook_right.add(notebook_right_page2, text='Graph')
+        notebook_right.bind('<<NotebookTabChanged>>', lambda e: changePageRight())
+
+        # add graph
+        self.graph_list = ["Amount of todo", "Completed", "Incompleted"]
+        # combobox graph
+        select_graph = StringVar()
+        graph_box =  ttk.Combobox(notebook_right_page2, width = 27, textvariable=select_graph)
+        graph_box['values'] = self.graph_list
+        graph_box.current(0)
+        graph_box.pack()
+
+        graph_box.bind('<<ComboboxSelected>>', lambda e: showGraph())
+        # graph image
+        graph_image = Label(notebook_right_page2)
+        graph_image.pack()
 
         #///////////////////////////
 
@@ -597,7 +638,9 @@ class App:
         detail_btn_add = Button(detail_frame3,text ="+", command= lambda e: click_check,state= DISABLED)
         detail_btn_add.grid(row=0, column=6, sticky='e')
         detail_btn_add.bind("<Button>",lambda e: add_task())
-
+        
+        fetch_data()
+        self.note.graph()
         fetch_listbox()
         #///////////////////////////
 
@@ -668,6 +711,7 @@ class addWindow(Toplevel):
                 self.note.toJson()
                 fetch_data()
                 fetch_listbox()
+                self.note.graph()
 
         fetch_data()
                 
@@ -798,6 +842,7 @@ class editWindow(Toplevel):
             self.note.toJson()
             fetch_data()
             fetch_listbox()
+            self.note.graph()
 
         fetch_data()
 
