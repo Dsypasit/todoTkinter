@@ -70,6 +70,7 @@ class NoteManager:
             self.checkUser(user_all[0])
         else:
             self.checkUser(self.user.getName())
+            self.toJson()
         self.separateTodo()
         return self.userTodo
         
@@ -78,6 +79,7 @@ class NoteManager:
         if user in self.userTodo:       # if self.userTodo have username, it's will use todo in userTodo
             self.todoAll = self.userTodo[user]      
         else:
+            self.userTodo[user] = []
             self.todoAll = []   # else create emty list
         self.separateTodo()
         return self.todoAll
@@ -102,8 +104,8 @@ class NoteManager:
             
 if __name__ == "__main__":
     no = NoteManager()
-    no.createTodo("cooking", "2011-1-2", "hi1", strftime("%H:%M:%S"))
-    no.createTodo("รดน้ำต้นไม่", "2011-1-3", "hihi", strftime("%H:%M:%S"))
+    no.createTodo("cooking", "2011-1-2", "hi1", strftime("13:%M:%S"))
+    no.createTodo("รดน้ำต้นไม่", "2011-1-3", "hihi", strftime("15:%M:%S"))
     no.createTodo("daily", "2011-1-14", "hihi", strftime("%H:%M:%S"))
     no.createTodo("math", "2011-2-3", "hihi", strftime("%H:%M:%S"))
     no.checkUser("ong")

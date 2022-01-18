@@ -7,7 +7,7 @@ from tkinter import ttk
 from tkinter.font import Font
 from note import NoteManager
 from tkcalendar import DateEntry # pip install tkcalendar
-from datetime import datetime
+from datetime import datetime, date
 from time import strftime
 
 # Creating App class which will contain
@@ -195,13 +195,14 @@ class App:
 
         def check_item():
                 try :
+                        today = date.today().strftime("%Y-%m-%d")
                         if self.check_com:
-                                value_title = clistbox.get(self.last_index)      # text selection form listbox
                                 self.note.todoCompleted[self.last_index]['completed'] = False
+                                self.note.todoCompleted[self.last_index]['dateCompleted'] = None
                                 
                         else:
-                                value_title = main_listbox.get(self.last_index)      # text selection form listbox
                                 self.note.todoIncompleted[self.last_index]['completed'] = True
+                                self.note.todoIncompleted[self.last_index]['dateCompleted'] = today
                                 
                         update_json()
                         fetch_listbox()
@@ -219,7 +220,7 @@ class App:
                         task_listbox.delete(0,END)    
                         task_text.set('')       # empty entry
 
-                        if len(listbox.curselection()):
+                        if len(listbox.curselection()): # ()
                                 self.last_index = int(listbox.curselection()[0])
 
                         if listbox == clistbox:
