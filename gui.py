@@ -5,7 +5,7 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from tkinter.font import Font
-from note import Note
+from note import NoteManager
 from tkcalendar import DateEntry # pip install tkcalendar
 from datetime import datetime
 from time import strftime
@@ -15,10 +15,8 @@ class App:
     def __init__(self, master) -> None:
         # Instantiating master i.e toplevel Widget
         self.master = master
-        self.note = Note()
+        self.note = NoteManager()
         self.mlist = []
-        self.mlistTodo = []
-        self.clistTodo = []
         self.clist = []
         self.todo = []
         self.tasklist =[]
@@ -35,14 +33,14 @@ class App:
                                 return n
 
         def fetch_listbox():
-                mlist = self.note.getTodoIncompletedTitle()
-                clist = self.note.getTodoCompletedTitle()
+                mlist = self.note.getTodoIncompleted()
+                clist = self.note.getTodoCompleted()
                 main_listbox.delete(0, END)
                 clistbox.delete(0, END)
                 for item in mlist:
-                        main_listbox.insert(END, item)
+                        main_listbox.insert(END, item['title'])
                 for item in clist:
-                        clistbox.insert(END, item)
+                        clistbox.insert(END, item['title'])
 
         def fetch_data():
                 self.note.loadJson(account_str.get())
@@ -240,17 +238,15 @@ class App:
                                 # show title 
                                 main_title_text.set(value['title'])
                                 # show date
-                                selection_date = [int(i) for i in value['endDate'].split('-')]
-                                main_cal = DateEntry(detail_frame1, selectmode = 'day',
-                                year = selection_date[0], month = selection_date[1],
-                                day = selection_date[2])
+                                selection_date = value['endDate']
+                                main_cal.set_date(datetime.strptime(selection_date, "%Y-%m-%d"))
                                 main_cal.grid(row=0, column=3, padx=10, sticky='w') 
                                 # show detail
                                 value_detail = value['detail']
                                 main_detail_text.set(value_detail)
                                 # set time
                                 value_time = strftime('%H:%M:%S')
-                                main_time_text.set(value_time)  # adding time to Entry
+                                main_time_text.set(value['timeEnd'])  # adding time to Entry
 
                                 # set task
                                 for n, i in enumerate(value['task']):
@@ -290,17 +286,15 @@ class App:
                                 # show title 
                                 main_title_text.set(value['title'])
                                 # show date
-                                selection_date = [int(i) for i in value['endDate'].split('-')]
-                                main_cal = DateEntry(detail_frame1, selectmode = 'day',
-                                year = selection_date[0], month = selection_date[1],
-                                day = selection_date[2])
-                                main_cal.grid(row=0, column=3, padx=10, sticky='w') 
+                                selection_date = value['endDate']
+                                main_cal.set_date(datetime.strptime(selection_date, "%Y-%m-%d"))
+                                main_cal.grid(row=0, column=3, padx=10, sticky='w')
                                 # show detail
                                 value_detail = value['detail']
                                 main_detail_text.set(value_detail)
                                 # set time
                                 value_time = strftime('%H:%M:%S')
-                                main_time_text.set(value_time)  # adding time to Entry
+                                main_time_text.set(value['timeEnd'])  # adding time to Entry
                                 # set task
                                 for n, i in enumerate(value['task']):
                                         task_listbox.insert(END, u'\u2022 '+i['title'])
@@ -610,7 +604,7 @@ class addWindow(Toplevel):
         # set self => master 
         super().__init__(master = master)
         self.title("Add List")
-        self.note = Note()
+        self.note = NoteManager()
         self.mlist = []
         self.clist = []
         self.todo = []
@@ -623,7 +617,8 @@ class addWindow(Toplevel):
                 str_title = add_title_text.get()
                 str_detail = add_detail_text.get()
                 str_date = self.cal.get_date().strftime("%Y-%m-%d")
-                self.note.createTodo(str_title, str_date, str_detail)
+                str_time = add_time_text.get()
+                self.note.createTodo(str_title, str_date, str_detail, str_time)
                 main_listbox.insert(END, str_title)
                 update_json()
                 self.destroy()
@@ -644,8 +639,6 @@ class addWindow(Toplevel):
                 self.note.loadJson()
                 self.note.checkUser(self.name)
                 self.todo = self.note.getTodos()
-                self.mlistTodo = self.note.getTodoIncompleted()
-                self.clistTodo = self.note.getTodoCompleted()
                 self.account = self.note.getAccout()
         
         def update_json():
@@ -716,11 +709,10 @@ class editWindow(Toplevel):
         super().__init__(master = master)
         self.title("Update List")
         self.name = name
-        self.note = Note()
+        self.note = NoteManager()
         self.todo = {}
         self.clist = []
         self.mlistTodo = []
-        self.clistTodo = []
         self.mlist = []
         self.update_func = update_func
         self.index = int(e.widget.curselection()[0])
@@ -773,7 +765,6 @@ class editWindow(Toplevel):
                 self.note.checkUser(self.name)
                 self.todo = self.note.getTodos()
                 self.mlistTodo = self.note.getTodoIncompleted()
-                self.clistTodo = self.note.getTodoCompleted()
                 self.account = self.note.getAccout()
 
         def update_json():

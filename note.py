@@ -2,7 +2,8 @@ from todo import TodoList
 from user import User
 import json
 from datetime import datetime
-class Note:
+from time import strftime
+class NoteManager:
     def __init__(self):
         self.todoAll = []
         self.user = User()
@@ -11,11 +12,12 @@ class Note:
         self.todoIncompleted = []
         self.filename = "data_file.json"
 
-    def createTodo(self, title, date, detail):      # create Todo
+    def createTodo(self, title, date, detail, time):      # create Todo
         todo = TodoList()
         todo.setTitle(title)
         todo.setDate(date)
         todo.setDetail(detail)
+        todo.setTime(time)
         self.todoAll.append(todo.to_dict())
         self.todoIncompleted.append(todo.to_dict())
         self.updateCurrentUser()
@@ -29,14 +31,6 @@ class Note:
             else:
                 self.todoIncompleted.append(todo)
         self.sortTodo()
-
-    def findTodo(self, index, select):
-        l = []
-        if select == 'c':
-            l = self.todoCompleted
-        elif select == 'ic':
-            l = self.todoIncompleted
-        return l[index]
     
     def getTodoCompleted(self):
         return self.todoCompleted
@@ -49,24 +43,15 @@ class Note:
 
     def getTodoIncompletedTitle(self):
         return [i['title'] for i in self.todoIncompleted]
-    
-    def setTodoCompleted(self, l):
-        self.todoCompleted = l
-    
-    def setTodoIncompleted(self, l):
-        self.todoIncompleted = l
 
     def getTodos(self):
         self.checkUser(self.user.getName())    # chack current user
         return self.todoAll
 
-    def alarmTodo(self):
-        pass
-
     def sortTodo(self):
-        self.todoCompleted.sort( key=lambda a:datetime.strptime(a['endDate'], "%Y-%m-%d") )
-        self.todoIncompleted.sort( key=lambda a:datetime.strptime(a['endDate'], "%Y-%m-%d") )
-        self.todoAll.sort( key=lambda a:datetime.strptime(a['endDate'], "%Y-%m-%d") )
+        self.todoCompleted.sort( key=lambda a:(datetime.strptime(a['endDate'], "%Y-%m-%d"), datetime.strptime(a['timeEnd'], "%H:%M:%S")) )
+        self.todoIncompleted.sort( key=lambda a:(datetime.strptime(a['endDate'], "%Y-%m-%d"), datetime.strptime(a['timeEnd'], "%H:%M:%S")))
+        self.todoAll.sort( key=lambda a:(datetime.strptime(a['endDate'], "%Y-%m-%d"), datetime.strptime(a['timeEnd'], "%H:%M:%S")))
 
     def updateCurrentUser(self):
         self.userTodo[self.user.getName()] = self.todoCompleted + self.todoIncompleted
@@ -116,14 +101,14 @@ class Note:
 
             
 if __name__ == "__main__":
-    no = Note()
-    no.createTodo("cooking", "2011-1-2", "hi1")
-    no.createTodo("รดน้ำต้นไม่", "2011-1-3", "hihi")
-    no.createTodo("daily", "2011-1-14", "hihi")
-    no.createTodo("math", "2011-2-3", "hihi")
+    no = NoteManager()
+    no.createTodo("cooking", "2011-1-2", "hi1", strftime("%H:%M:%S"))
+    no.createTodo("รดน้ำต้นไม่", "2011-1-3", "hihi", strftime("%H:%M:%S"))
+    no.createTodo("daily", "2011-1-14", "hihi", strftime("%H:%M:%S"))
+    no.createTodo("math", "2011-2-3", "hihi", strftime("%H:%M:%S"))
     no.checkUser("ong")
-    no.createTodo("anime", "2011-1-3", "hellow")
-    no.createTodo("serie", "2011-1-3", "hhhhh")
+    no.createTodo("anime", "2011-1-3", "hellow", strftime("%H:%M:%S"))
+    no.createTodo("serie", "2011-1-3", "hhhhh", strftime("%H:%M:%S"))
     no.toJson()
     a = no.loadJson()
     no.checkUser('user1')

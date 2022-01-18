@@ -6,9 +6,11 @@ class TodoList(Task):
         self.title = ""
         self.pinned = False
         self.completed = False
-        self.dueDate = 0
+        self.endDate = 0
+        self.time = 0
         self.detail = ""
         self.task = []
+        self.dateCompleted = None
 
     def to_dict(self):      # change attribute to dict
         return {'title': self.title,
@@ -16,7 +18,9 @@ class TodoList(Task):
                 'completed': self.completed,
                 'pinned': self.pinned,
                 'detail': self.detail,
-                'task': self.task}
+                'task': self.task,
+                'timeEnd': self.time,
+                'dateCompleted': self.dateCompleted}
 
     def getDate(self):
         return self.dueDate     # return pendulum date
@@ -57,6 +61,9 @@ class TodoList(Task):
     
     def removeTask(self, index):
         self.task.pop(index)
+    
+    def setTime(self, time):
+        self.time = time
 
 
 if __name__ == "__main__":
