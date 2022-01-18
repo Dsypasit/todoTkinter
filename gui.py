@@ -1,6 +1,4 @@
 # importing tkinter module and Widgets
-from distutils import command
-from distutils.cmd import Command
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
@@ -218,7 +216,7 @@ class App:
                         global main_listbox, clistbox
                         fetch_data()
                         task_listbox.delete(0,END)    
-                        task_text.set('')       # empty entry
+                        task_text.set('')       # empty entry 
 
                         if len(listbox.curselection()): # ()
                                 self.last_index = int(listbox.curselection()[0])
@@ -265,12 +263,12 @@ class App:
                         elif listbox == main_listbox:
                                 self.check_com = False
                                 # enable btn_addtask & btn_del 
-                                btn_add = Button(detail_frame3,text ="+",)
+                                btn_add = Button(detail_frame3,text ="+")
                                 btn_add.bind("<Button>",
                                         lambda e: addtask())
                                 btn_add.grid(row=0, column=6, sticky='e')
  
-                                btn_del = Button(detail_frame1,text ="Delete List", state= NORMAL, command=delete_item)
+                                btn_del = Button(detail_frame1,text ="Delete List", command=delete_item)
                                 btn_del.grid(row=2,column=3,pady=10, sticky='ew')
                                 
                                 #set index
@@ -318,6 +316,9 @@ class App:
                 filewin = Toplevel(root)
                 button = Button(filewin, text="Do nothing button")
                 button.pack()
+                ask = messagebox.askokcancel("Are you sure?","Are you sure to delete all complete")
+                if ask:
+                        clistbox.delete(0,END)  
 
         def addtask():
                 global main_listbox
@@ -329,6 +330,8 @@ class App:
                 # status 
                 task_status = Label(detail_frame3, text ="have "+ str(task_listbox.size()) + " task ")
                 task_status.grid(row=0, column=0, sticky='w')
+                task_listbox.select_clear(0, END)
+
 
         #///////////////////////////
 
