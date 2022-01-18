@@ -61,9 +61,13 @@ class NoteManager:
     def updateCurrentUser(self):
         self.userTodo[self.user.getName()] = self.todoCompleted + self.todoIncompleted
     
-    def toJson(self):
-        with open(self.filename, "w") as write_file:     # convert dict to json file
-            json.dump(self.userTodo, write_file)
+    def toJson(self, path=""):
+        if len(path)>0:
+            with open(path, "w") as write_file:     # convert dict to json file
+                json.dump(self.userTodo, write_file)
+        else:
+            with open(self.filename, "w") as write_file:     # convert dict to json file
+                json.dump(self.userTodo, write_file)
 
     def loadJson(self, name=""):
         with open(self.filename, "r") as read_file:  # convert json file to dict
@@ -102,8 +106,9 @@ class NoteManager:
         self.user.changeName(self.getAccout()[0])
     
     def export_file(self, path):
-        self.filename = path
-        self.toJson()
+        # self.filename = path
+        self.updateCurrentUser()
+        self.toJson(path)
 
     def graph_pie(self):
         name = self.user.getName()

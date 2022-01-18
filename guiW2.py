@@ -1,12 +1,13 @@
 from tkinter.font import Font
 from tkinter import *
 from tkinter import messagebox
-from tkinter import ttk
+from tkinter import ttk, filedialog
 from tkinter.font import Font
 from note import NoteManager
 from tkcalendar import DateEntry # pip install tkcalendar
 from datetime import datetime, date
 from time import strftime
+from tkinter.filedialog import askopenfile
 
 # Creating App class which will contain
 class App:
@@ -335,7 +336,20 @@ class App:
                 task_status.configure(text = str(task_listbox.size()) + " list ")
                 task_listbox.select_clear(0, END)
 
+        def import_data():
+            file = filedialog.askopenfilename(filetypes=[('Json file', '*.json')])
+            print(file)
+            if file:
+                self.note.load_file(file)
+                fetch_data()
+                fetch_listbox()
+                self.note.graph()
 
+        def export_data():
+            file = filedialog.asksaveasfilename(filetypes=[('Json file', '*.json')]) + '.json'
+            print(file)
+            if file:
+                self.note.export_file(file)
         #///////////////////////////
         self.note.loadJson()
         self.account = self.note.getAccout()
@@ -358,8 +372,8 @@ class App:
         menubar.add_cascade(label="Account", menu=account_menu)
         # create edit menu
         edit_menu = Menu(menubar, tearoff=0)
-        edit_menu.add_command(label="Import",  command= lambda: editWindow(self.master))
-        edit_menu.add_command(label="Export",  command= lambda: editWindow(self.master))
+        edit_menu.add_command(label="Import",  command= lambda: import_data())
+        edit_menu.add_command(label="Export",  command= lambda: export_data())
         edit_menu.add_separator()
         edit_menu.add_command(label="Delete All Complete",  command=del_all)
 
