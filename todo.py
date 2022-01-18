@@ -50,7 +50,10 @@ class TodoList(Task):
         self.pinned = pin
     
     def addTask(self, task):
-        self.task.append(task)
+        self.task.append({'title': task, 'completed': False})
+    
+    def checkTask(self, index):
+        self.task[index]['completed'] = not self.task[index]['completed']
     
     def removeTask(self, index):
         self.task.pop(index)

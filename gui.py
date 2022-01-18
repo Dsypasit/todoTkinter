@@ -23,6 +23,9 @@ class App:
         self.todo = []
         self.tasklist =[]
         self.account = []
+        self.last_index = 0
+        self.last_task_index = 0
+        self.check_com = False
         # Setting the title of the window
         self.master.title('TODODO')
 
@@ -163,34 +166,48 @@ class App:
         
         global click_check
         def click_check():
-                try :   
-                        index = int(task_listbox.curselection()[0])
+                # try :   
+                        self.last_task_index = int(task_listbox.curselection()[0])
                         # not done
-                        if task_listbox.itemcget(index, "fg") == "#ffa364":
+                        if task_listbox.itemcget(self.last_task_index, "fg") == "#ffa364":
                                 task_listbox.itemconfig(
-                                        task_listbox.curselection(),
+                                        self.last_task_index,
                                         fg='#21130d')
                                 # get rid of selection bar
                                 task_listbox.select_clear(0, END)
+                                if self.check_com:
+                                        self.note.todoCompleted[self.last_index]['task'][self.last_task_index]['completed'] = False
+                                else:
+                                        self.note.todoIncompleted[self.last_index]['task'][self.last_task_index]['completed'] = False
+                                update_json()
+                                # print(task_listbox.curselection())
+                                return
                         # done
                         task_listbox.itemconfig(
-                                task_listbox.curselection(),
+                                self.last_task_index,
                                 fg='#ffa364')
                         # get rid of selection bar
                         task_listbox.select_clear(0, END)
-                except: pass
+                        if self.check_com:
+                                self.note.todoCompleted[self.last_index]['task'][self.last_task_index]['completed'] = True
+                        else:
+                                self.note.todoIncompleted[self.last_index]['task'][self.last_task_index]['completed'] = True
+                        update_json()
+                # except: pass
 
         def check_item():
                 try :
-                        index = int(main_listbox.curselection()[0])
-                        value_title = main_listbox.get(index)      # text selection form listbox
-                        for i in self.todo:
-                                if i['title'] == self.mlist[index]:
-                                        i['completed'] = True
+                        if self.check_com:
+                                value_title = clistbox.get(self.last_index)      # text selection form listbox
+                                self.note.todoCompleted[self.last_index]['completed'] = False
+                                
+                        else:
+                                value_title = main_listbox.get(self.last_index)      # text selection form listbox
+                                self.note.todoIncompleted[self.last_index]['completed'] = True
+                                
                         update_json()
-                        clistbox.insert(END, value_title) 
-
-                        main_listbox.delete(ANCHOR)
+                        fetch_listbox()
+                        
                         # update status 
                         text_status = Label(mframe3, text ="have "+ str(main_listbox.size()) + " list ")
                         text_status.grid(row=0, column=0, sticky='w')
@@ -204,22 +221,13 @@ class App:
                         task_listbox.delete(0,END)    
                         task_text.set('')       # empty entry
 
+                        if len(listbox.curselection()):
+                                self.last_index = int(listbox.curselection()[0])
+
                         if listbox == clistbox:
-                                pass
-                                
-                        elif listbox == main_listbox:
-                                # enable btn_addtask & btn_del 
-                                btn_add = Button(detail_frame3,text ="+",)
-                                btn_add.bind("<Button>",
-                                        lambda e: addtask())
-                                btn_add.grid(row=0, column=6, sticky='e')
- 
-                                btn_del = Button(detail_frame1,text ="Delete List", state= NORMAL, command=delete_item)
-                                btn_del.grid(row=2,column=3,pady=10, sticky='ew')
-                                
+                                self.check_com = True
                                 #set index
                                 if index_in == None:
-                                        print(listbox.curselection())
                                         index = int(listbox.curselection()[0])
                                 else:
                                         index = index_in
@@ -228,7 +236,7 @@ class App:
                                 task_listbox.bind('<<ListboxSelect>>', 
                                         lambda e: click_check()) #Select click
 
-                                value = find_todo(self.mlist[index]) 
+                                value = self.note.todoCompleted[index] 
                                 # show title 
                                 main_title_text.set(value['title'])
                                 # show date
@@ -245,8 +253,60 @@ class App:
                                 main_time_text.set(value_time)  # adding time to Entry
 
                                 # set task
-                                for i in self.note.todoIncompleted[index]['task']:
-                                        task_listbox.insert(END, i)
+                                for n, i in enumerate(value['task']):
+                                        task_listbox.insert(END, u'\u2022 '+i['title'])
+                                        task_listbox.itemconfig(
+                                                n,
+                                                fg='#ffa364' if i['completed'] else '#21130d')
+                                        # get rid of selection bar
+
+                                # status 
+                                task_status = Label(detail_frame3, text ="have "+ str(task_listbox.size()) + " task ")
+                                task_status.grid(row=0, column=0, sticky='w')
+                                pass
+                                
+                        elif listbox == main_listbox:
+                                self.check_com = False
+                                # enable btn_addtask & btn_del 
+                                btn_add = Button(detail_frame3,text ="+",)
+                                btn_add.bind("<Button>",
+                                        lambda e: addtask())
+                                btn_add.grid(row=0, column=6, sticky='e')
+ 
+                                btn_del = Button(detail_frame1,text ="Delete List", state= NORMAL, command=delete_item)
+                                btn_del.grid(row=2,column=3,pady=10, sticky='ew')
+                                
+                                #set index
+                                if index_in == None:
+                                        index = int(listbox.curselection()[0])
+                                else:
+                                        index = index_in
+                                value_title = listbox.get(index)      # text selection form listbox
+
+                                task_listbox.bind('<<ListboxSelect>>', 
+                                        lambda e: click_check()) #Select click
+
+                                value = self.note.todoIncompleted[index] 
+                                # show title 
+                                main_title_text.set(value['title'])
+                                # show date
+                                selection_date = [int(i) for i in value['endDate'].split('-')]
+                                main_cal = DateEntry(detail_frame1, selectmode = 'day',
+                                year = selection_date[0], month = selection_date[1],
+                                day = selection_date[2])
+                                main_cal.grid(row=0, column=3, padx=10, sticky='w') 
+                                # show detail
+                                value_detail = value['detail']
+                                main_detail_text.set(value_detail)
+                                # set time
+                                value_time = strftime('%H:%M:%S')
+                                main_time_text.set(value_time)  # adding time to Entry
+                                # set task
+                                for n, i in enumerate(value['task']):
+                                        task_listbox.insert(END, u'\u2022 '+i['title'])
+                                        task_listbox.itemconfig(
+                                                n,
+                                                fg='#ffa364' if i['completed'] else '#21130d')
 
                                 # status 
                                 task_status = Label(detail_frame3, text ="have "+ str(task_listbox.size()) + " task ")
@@ -266,9 +326,9 @@ class App:
 
         def addtask():
                 global main_listbox
-                task_listbox.insert(END, task_text.get())
-                index = int(main_listbox.curselection()[0])
-                self.note.todoIncompleted[index]['task'].append(task_text.get())
+                task_listbox.insert(END, u'\u2022 '+task_text.get())
+                print(main_listbox.curselection())
+                self.note.todoIncompleted[self.last_index]['task'].append({'title': task_text.get(), 'completed': False})
                 update_json()
                 task_text.set('')
                 # status 
@@ -503,7 +563,7 @@ class App:
         clistbox.configure(yscrollcommand=scrollbar.set)
         scrollbar.configure(command=clistbox.yview)
         clistbox.bind('<<ListboxSelect>>', 
-                lambda e: click_item_show(clistbox)) #Select click
+                lambda e: click_item_show(clistbox, int(e.widget.curselection()[0]))) #Select click
         
         separator = ttk.Separator(cframe2, orient='horizontal')
         separator.grid(sticky="ew")
@@ -723,10 +783,8 @@ class editWindow(Toplevel):
                 fetch_listbox()
 
         fetch_data()
-        print(self.note.getTodoIncompletedTitle())
 
         # index = int(listbox.curselection()[0])
-        print(self.index)
 
 
         # title
